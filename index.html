@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kuis Interaktif Matematika Kelas 6 — Jarak, Kecepatan & Waktu (90 Soal)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- KaTeX untuk merender seluruh formula matematika -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            },
+            accent: {
+              500: '#0d9488',
+              600: '#0f766e',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(6px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-pop {
+      animation: popIn 0.22s ease-out forwards;
+    }
+    /* Custom scrollbar untuk panel navigasi soal */
+    .nav-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .nav-scroll::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-600 selection:text-white min-h-screen flex flex-col">
+
+  <!-- Toast Notification (Pengganti alert/confirm) -->
+  <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden max-w-sm rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-xl border border-slate-700 animate-pop" role="status" aria-live="polite">
+    <div class="flex items-center gap-2.5">
+      <span id="toast-icon" class="text-base">✨</span>
+      <span id="toast-message">Pesan</span>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Reset Kuis -->
+  <div id="reset-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 animate-pop space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 font-bold text-lg">⚠️</div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900">Ulangi Kuis &amp; Hapus Progres?</h3>
+          <p class="text-xs text-slate-500">Semua jawaban tersimpan akan di-reset dan urutan opsi akan diacak ulang.</p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+        <button type="button" onclick="closeResetModal()" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+          Batal
+        </button>
+        <button type="button" onclick="confirmResetQuiz()" class="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-rose-700 transition">
+          Ya, Reset Semua
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Sticky -->
+  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-teal-600 text-white font-extrabold shadow-sm">
+          JKW
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Kuis Kelas 6 SD</span>
+            <span id="save-badge" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Tersimpan Otomatis
+            </span>
+          </div>
+          <h1 class="truncate text-sm font-extrabold text-slate-900 sm:text-base">Latihan 90 Soal: Jarak, Kecepatan &amp; Waktu</h1>
+        </div>
+      </div>
+
+      <!-- Kontrol Kanan Header -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Ringkasan Skor -->
+        <div class="hidden sm:flex items-center gap-3 rounded-xl bg-indigo-50 px-3.5 py-1.5 border border-indigo-100">
+          <div class="text-xs">
+            <span class="text-slate-500">Terjawab:</span>
+            <strong id="header-answered" class="text-slate-900">0/90</strong>
+          </div>
+          <div class="h-4 w-px bg-indigo-200"></div>
+          <div class="text-xs">
+            <span class="text-slate-500">Benar:</span>
+            <strong id="header-correct" class="text-emerald-700">0</strong>
+          </div>
+        </div>
+
+        <!-- Tombol Hide/Show Navigasi Soal -->
+        <button
+          type="button"
+          id="toggle-nav-btn"
+          onclick="toggleNavDrawer()"
+          aria-expanded="true"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
+        >
+          <span id="toggle-nav-icon">🧭</span>
+          <span id="toggle-nav-label">Sembunyikan Navigasi</span>
+        </button>
+
+        <!-- Tombol Reset -->
+        <button
+          type="button"
+          onclick="openResetModal()"
+          title="Ulangi Kuis"
+          class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition"
+        >
+          ↻ Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Bar Tab Sub-Materi -->
+    <div class="border-t border-slate-100 bg-slate-50/80">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-2 overflow-x-auto px-4 py-2.5 sm:px-6">
+        <div class="flex items-center gap-2" role="tablist" aria-label="Sub Materi JKW">
+          <button
+            type="button"
+            role="tab"
+            id="subtab-jarak"
+            onclick="switchSubMaterial('jarak')"
+            class="sub-tab shrink-0 rounded-xl bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition flex items-center gap-2"
+          >
+            <span>🛣️ Sub-Materi 1: Jarak (30 Soal)</span>
+            <span id="badge-jarak" class="rounded-full bg-white/20 px-2 py-0.5 text-[11px]">0/30</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            id="subtab-kecepatan"
+            onclick="switchSubMaterial('kecepatan')"
+            class="sub-tab shrink-0 rounded-xl bg-white px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 transition flex items-center gap-2"
+          >
+            <span>⚡ Sub-Materi 2: Kecepatan (30 Soal)</span>
+            <span id="badge-kecepatan" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">0/30</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            id="subtab-waktu"
+            onclick="switchSubMaterial('waktu')"
+            class="sub-tab shrink-0 rounded-xl bg-white px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 transition flex items-center gap-2"
+          >
+            <span>⏱️ Sub-Materi 3: Waktu (30 Soal)</span>
+            <span id="badge-waktu" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">0/30</span>
+          </button>
+        </div>
+
+        <!-- Indikator Skor Mobile -->
+        <div class="flex sm:hidden items-center gap-2 shrink-0 text-xs font-bold text-indigo-900 bg-indigo-100 px-2.5 py-1.5 rounded-lg">
+          <span id="mobile-score">0/90</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Info Offline / Anti-Hilang -->
+  <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-teal-800 text-white">
+    <div class="mx-auto flex max-w-7xl flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 sm:px-6 text-xs">
+      <p class="text-indigo-100">
+        <strong class="text-teal-300">Mode Aman Offline:</strong> Setiap jawaban &amp; posisi soal langsung tersimpan otomatis di perangkatmu. Aman walau internet putus atau halaman ter-reload.
+      </p>
+      <div class="flex items-center gap-3 shrink-0">
+        <span>Skor Sub-Materi Aktif: <strong id="sub-score-text" class="text-amber-300">0 Benar / 0 Terjawab</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Area Utama Kuis -->
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+    <div id="quiz-layout-grid" class="grid gap-6 lg:grid-cols-12 items-start">
+
+      <!-- Kolom Kiri: Kartu Soal Aktif -->
+      <section id="question-column" class="lg:col-span-8 space-y-5">
+        <!-- Kartu Soal -->
+        <div id="question-card" class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm space-y-5 animate-pop">
+          <!-- Meta Soal -->
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span id="q-number-badge" class="rounded-xl bg-indigo-600 px-3 py-1 text-xs font-extrabold text-white">
+                Soal 1 dari 30
+              </span>
+              <span id="q-topic-pill" class="rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-800 border border-teal-200/70">
+                Sub-Materi: Jarak
+              </span>
+            </div>
+            <span id="q-status-pill" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              Belum dijawab
+            </span>
+          </div>
+
+          <!-- Teks Pertanyaan -->
+          <div id="q-text" class="text-base sm:text-lg font-semibold text-slate-900 leading-relaxed">
+            Memuat soal...
+          </div>
+
+          <!-- Pilihan Jawaban A, B, C, D -->
+          <div id="options-container" class="grid gap-3 pt-1" role="radiogroup" aria-label="Pilihan Jawaban">
+            <!-- Diisi dinamis oleh JS -->
+          </div>
+
+          <!-- Panel Hasil Langsung (Benar/Salah + Pembahasan Trik Cepat) -->
+          <div id="instant-feedback" class="hidden rounded-2xl p-4 sm:p-5 space-y-2.5 animate-pop">
+            <div class="flex items-center gap-2">
+              <span id="fb-icon" class="text-xl">✅</span>
+              <h3 id="fb-title" class="text-sm sm:text-base font-extrabold">Jawabanmu Benar!</h3>
+            </div>
+            <p id="fb-explanation" class="text-xs sm:text-sm leading-relaxed"></p>
+          </div>
+
+          <!-- Tombol Navigasi Sebelumnya / Berikutnya -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              id="btn-prev"
+              onclick="goPrevQuestion()"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition"
+            >
+              ← Sebelumnya
+            </button>
+
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="jumpToNextUnanswered()"
+                class="rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs font-bold text-amber-800 border border-amber-200 hover:bg-amber-100 transition"
+              >
+                Lompat ke Belum Dijawab ⚡
+              </button>
+              <button
+                type="button"
+                id="btn-next"
+                onclick="goNextQuestion()"
+                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-40 disabled:pointer-events-none transition shadow-xs"
+              >
+                Berikutnya →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ringkasan Statistik 3 Sub-Materi -->
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between text-xs font-bold text-indigo-700 mb-1">
+              <span>🛣️ Jarak</span>
+              <span id="stat-jarak-pct">0%</span>
+            </div>
+            <p id="stat-jarak-detail" class="text-xs text-slate-600">0 benar • 0 salah • 30 kosong</p>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div id="bar-jarak" class="h-full bg-indigo-600 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between text-xs font-bold text-teal-700 mb-1">
+              <span>⚡ Kecepatan</span>
+              <span id="stat-kecepatan-pct">0%</span>
+            </div>
+            <p id="stat-kecepatan-detail" class="text-xs text-slate-600">0 benar • 0 salah • 30 kosong</p>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div id="bar-kecepatan" class="h-full bg-teal-600 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between text-xs font-bold text-amber-700 mb-1">
+              <span>⏱️ Waktu</span>
+              <span id="stat-waktu-pct">0%</span>
+            </div>
+            <p id="stat-waktu-detail" class="text-xs text-slate-600">0 benar • 0 salah • 30 kosong</p>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div id="bar-waktu" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Kolom Kanan: Panel Navigasi Nomor Soal (Bisa di-Hide) -->
+      <aside id="nav-sidebar" class="lg:col-span-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4 lg:sticky lg:top-32">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-sm font-extrabold text-slate-900">Navigasi Nomor Soal</h2>
+            <p id="nav-subtitle" class="text-xs text-slate-500">Sub-Materi Jarak (1–30)</p>
+          </div>
+          <button
+            type="button"
+            onclick="toggleNavDrawer()"
+            class="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 transition"
+            title="Sembunyikan Panel Navigasi"
+          >
+            ✕ Hide
+          </button>
+        </div>
+
+        <!-- Legenda Status Warna -->
+        <div class="grid grid-cols-2 gap-2 text-[11px] font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+          <div class="flex items-center gap-1.5">
+            <span class="h-3 w-3 rounded-sm bg-emerald-500 inline-block"></span>
+            <span>Benar</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-3 w-3 rounded-sm bg-rose-500 inline-block"></span>
+            <span>Salah</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-3 w-3 rounded-sm border-2 border-indigo-600 bg-indigo-50 inline-block"></span>
+            <span>Sedang Dibuka</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-3 w-3 rounded-sm bg-white border border-slate-300 inline-block"></span>
+            <span>Belum Dijawab</span>
+          </div>
+        </div>
+
+        <!-- Grid 30 Nomor Soal -->
+        <div id="nav-grid" class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-2 max-h-80 overflow-y-auto nav-scroll pr-1">
+          <!-- Diisi dinamis 1..30 -->
+        </div>
+
+        <!-- Tombol Cepat Pindah Sub-Materi dari Panel Navigasi -->
+        <div class="border-t border-slate-100 pt-3 flex items-center justify-between text-xs">
+          <span class="text-slate-500">Pindah cepat:</span>
+          <div class="flex gap-1.5">
+            <button type="button" onclick="switchSubMaterial('jarak')" class="rounded-lg bg-indigo-50 px-2.5 py-1 font-bold text-indigo-700 hover:bg-indigo-100">Jarak</button>
+            <button type="button" onclick="switchSubMaterial('kecepatan')" class="rounded-lg bg-teal-50 px-2.5 py-1 font-bold text-teal-700 hover:bg-teal-100">Kecepatan</button>
+            <button type="button" onclick="switchSubMaterial('waktu')" class="rounded-lg bg-amber-50 px-2.5 py-1 font-bold text-amber-800 hover:bg-amber-100">Waktu</button>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-10 border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+    <div class="mx-auto max-w-7xl px-4">
+      <p class="font-semibold text-slate-700">Kuis Interaktif Matematika Kelas 6 SD — Jarak, Kecepatan &amp; Waktu (90 Soal)</p>
+      <p class="mt-0.5">Progres tersimpan otomatis di peramban perangkatmu meskipun koneksi terputus.</p>
+    </div>
+  </footer>
+
+  <script>
+    /**
+     * ============================================================================
+     * BANK SOAL LENGKAP: 90 SOAL BARU (30 JARAK, 30 KECEPATAN, 30 WAKTU)
+     * Seluruh soal berbeda dari contoh dan latihan pada modul materi sebelumnya.
+     * Setiap item menyimpan opsi benar pada indeks 0 sebelum diacak secara
+     * seimbang dan deterministik per sesi agar distribusi A, B, C, D merata.
+     * ============================================================================
+     */
+    const RAW_QUESTION_BANK = {
+      jarak: [
+        {
+          id: "J-01",
+          q: "Sebuah taksi melaju dengan kecepatan <span class=\"math-inline\">55\\text{ km/jam}</span> selama <span class=\"math-inline\">2\\text{ jam}</span>. Berapa jarak yang ditempuh taksi tersebut?",
+          options: ["<span class=\"math-inline\">110\\text{ km}</span>", "<span class=\"math-inline\">105\\text{ km}</span>", "<span class=\"math-inline\">115\\text{ km}</span>", "<span class=\"math-inline\">120\\text{ km}</span>"],
+          exp: "Gunakan rumus <span class=\"math-inline\">J = K \\times W = 55 \\times 2 = 110\\text{ km}</span>."
+        },
+        {
+          id: "J-02",
+          q: "Dina berlari pagi dengan kecepatan <span class=\"math-inline\">8\\text{ km/jam}</span> selama <span class=\"math-inline\">30\\text{ menit}</span>. Berapa jarak yang ditempuh Dina?",
+          options: ["<span class=\"math-inline\">4\\text{ km}</span>", "<span class=\"math-inline\">8\\text{ km}</span>", "<span class=\"math-inline\">16\\text{ km}</span>", "<span class=\"math-inline\">2\\text{ km}</span>"],
+          exp: "Ubah <span class=\"math-inline\">30\\text{ menit} = \\frac{1}{2}\\text{ jam}</span>. Maka <span class=\"math-inline\">J = 8 \\times \\frac{1}{2} = 4\\text{ km}</span>."
+        },
+        {
+          id: "J-03",
+          q: "Kereta api ekspres melaju dengan kecepatan <span class=\"math-inline\">84\\text{ km/jam}</span> selama <span class=\"math-inline\">2\\text{ jam } 30\\text{ menit}</span>. Jarak yang ditempuh kereta adalah...",
+          options: ["<span class=\"math-inline\">210\\text{ km}</span>", "<span class=\"math-inline\">168\\text{ km}</span>", "<span class=\"math-inline\">196\\text{ km}</span>", "<span class=\"math-inline\">252\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">2\\text{ jam } 30\\text{ menit} = 2{,}5\\text{ jam}</span>. Jadi <span class=\"math-inline\">J = 84 \\times 2{,}5 = 210\\text{ km}</span>."
+        },
+        {
+          id: "J-04",
+          q: "Sebuah drone terbang dengan kecepatan <span class=\"math-inline\">15\\text{ m/detik}</span> selama <span class=\"math-inline\">40\\text{ detik}</span>. Berapa meter jarak terbang drone tersebut?",
+          options: ["<span class=\"math-inline\">600\\text{ m}</span>", "<span class=\"math-inline\">450\\text{ m}</span>", "<span class=\"math-inline\">550\\text{ m}</span>", "<span class=\"math-inline\">750\\text{ m}</span>"],
+          exp: "Satuan sudah sama (<span class=\"math-inline\">\\text{m/detik}</span> dan <span class=\"math-inline\">\\text{detik}</span>): <span class=\"math-inline\">J = 15 \\times 40 = 600\\text{ m}</span>."
+        },
+        {
+          id: "J-05",
+          q: "Paman mengendarai sepeda motor dengan kecepatan <span class=\"math-inline\">48\\text{ km/jam}</span> selama <span class=\"math-inline\">45\\text{ menit}</span>. Jarak perjalanan Paman adalah...",
+          options: ["<span class=\"math-inline\">36\\text{ km}</span>", "<span class=\"math-inline\">32\\text{ km}</span>", "<span class=\"math-inline\">40\\text{ km}</span>", "<span class=\"math-inline\">42\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">45\\text{ menit} = \\frac{3}{4}\\text{ jam}</span>. Coret <span class=\"math-inline\">48 \\div 4 = 12</span>, lalu <span class=\"math-inline\">12 \\times 3 = 36\\text{ km}</span>."
+        },
+        {
+          id: "J-06",
+          q: "Kapal feri berlayar dengan kecepatan <span class=\"math-inline\">32\\text{ km/jam}</span> dari pukul <span class=\"math-inline\">08.15</span> hingga pukul <span class=\"math-inline\">11.15</span>. Berapa jarak pelayaran kapal feri?",
+          options: ["<span class=\"math-inline\">96\\text{ km}</span>", "<span class=\"math-inline\">64\\text{ km}</span>", "<span class=\"math-inline\">108\\text{ km}</span>", "<span class=\"math-inline\">128\\text{ km}</span>"],
+          exp: "Lama waktu = <span class=\"math-inline\">11.15 - 08.15 = 3\\text{ jam}</span>. Maka <span class=\"math-inline\">J = 32 \\times 3 = 96\\text{ km}</span>."
+        },
+        {
+          id: "J-07",
+          q: "Seekor cheetah berlari dengan kecepatan <span class=\"math-inline\">25\\text{ m/detik}</span> selama <span class=\"math-inline\">1\\text{ menit}</span>. Berapa meter jarak yang ditempuh cheetah?",
+          options: ["<span class=\"math-inline\">1.500\\text{ m}</span>", "<span class=\"math-inline\">250\\text{ m}</span>", "<span class=\"math-inline\">1.250\\text{ m}</span>", "<span class=\"math-inline\">1.800\\text{ m}</span>"],
+          exp: "Ubah <span class=\"math-inline\">1\\text{ menit} = 60\\text{ detik}</span>. Maka <span class=\"math-inline\">J = 25 \\times 60 = 1.500\\text{ m}</span>."
+        },
+        {
+          id: "J-08",
+          q: "Bus antarprovinsi melaju dengan kecepatan <span class=\"math-inline\">64\\text{ km/jam}</span> selama <span class=\"math-inline\">15\\text{ menit}</span>. Berapa kilometer jarak yang ditempuh bus?",
+          options: ["<span class=\"math-inline\">16\\text{ km}</span>", "<span class=\"math-inline\">12\\text{ km}</span>", "<span class=\"math-inline\">18\\text{ km}</span>", "<span class=\"math-inline\">24\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">15\\text{ menit} = \\frac{1}{4}\\text{ jam}</span>. Jadi <span class=\"math-inline\">J = 64 \\times \\frac{1}{4} = 16\\text{ km}</span>."
+        },
+        {
+          id: "J-09",
+          q: "Seorang kurir mengantar paket dengan kecepatan <span class=\"math-inline\">36\\text{ km/jam}</span> selama <span class=\"math-inline\">10\\text{ menit}</span>. Berapa <strong>meter</strong> jarak yang ditempuh kurir?",
+          options: ["<span class=\"math-inline\">6.000\\text{ m}</span>", "<span class=\"math-inline\">3.600\\text{ m}</span>", "<span class=\"math-inline\">600\\text{ m}</span>", "<span class=\"math-inline\">4.800\\text{ m}</span>"],
+          exp: "<span class=\"math-inline\">10\\text{ menit} = \\frac{1}{6}\\text{ jam}</span>. Jarak = <span class=\"math-inline\">36 \\times \\frac{1}{6} = 6\\text{ km} = 6.000\\text{ m}</span>."
+        },
+        {
+          id: "J-10",
+          q: "Pesawat terbang melaju dengan kecepatan <span class=\"math-inline\">720\\text{ km/jam}</span> selama <span class=\"math-inline\">1\\text{ jam } 15\\text{ menit}</span>. Jarak yang ditempuh pesawat adalah...",
+          options: ["<span class=\"math-inline\">900\\text{ km}</span>", "<span class=\"math-inline\">840\\text{ km}</span>", "<span class=\"math-inline\">960\\text{ km}</span>", "<span class=\"math-inline\">1.080\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">1\\text{ jam } 15\\text{ menit} = 1\\frac{1}{4}\\text{ jam} = \\frac{5}{4}\\text{ jam}</span>. Maka <span class=\"math-inline\">720 \\times \\frac{5}{4} = 180 \\times 5 = 900\\text{ km}</span>."
+        },
+        {
+          id: "J-11",
+          q: "Budi berjalan kaki ke perpustakaan dengan kecepatan <span class=\"math-inline\">60\\text{ m/menit}</span> selama <span class=\"math-inline\">25\\text{ menit}</span>. Berapa kilometer jarak rumah Budi ke perpustakaan?",
+          options: ["<span class=\"math-inline\">1{,}5\\text{ km}</span>", "<span class=\"math-inline\">15\\text{ km}</span>", "<span class=\"math-inline\">1{,}2\\text{ km}</span>", "<span class=\"math-inline\">2{,}5\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">J = 60 \\times 25 = 1.500\\text{ m} = 1{,}5\\text{ km}</span>."
+        },
+        {
+          id: "J-12",
+          q: "Mobil boks melaju selama <span class=\"math-inline\">3\\text{ jam } 20\\text{ menit}</span> dengan kecepatan rata-rata <span class=\"math-inline\">54\\text{ km/jam}</span>. Jarak yang ditempuh adalah...",
+          options: ["<span class=\"math-inline\">180\\text{ km}</span>", "<span class=\"math-inline\">162\\text{ km}</span>", "<span class=\"math-inline\">172\\text{ km}</span>", "<span class=\"math-inline\">198\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">3\\text{ jam } 20\\text{ menit} = 3\\frac{1}{3}\\text{ jam} = \\frac{10}{3}\\text{ jam}</span>. <span class=\"math-inline\">J = 54 \\times \\frac{10}{3} = 18 \\times 10 = 180\\text{ km}</span>."
+        },
+        {
+          id: "J-13",
+          q: "Atlet balap sepeda mengayuh dengan kecepatan <span class=\"math-inline\">42\\text{ km/jam}</span> selama <span class=\"math-inline\">50\\text{ menit}</span>. Berapa kilometer jarak yang ditempuhnya?",
+          options: ["<span class=\"math-inline\">35\\text{ km}</span>", "<span class=\"math-inline\">30\\text{ km}</span>", "<span class=\"math-inline\">38\\text{ km}</span>", "<span class=\"math-inline\">40\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">50\\text{ menit} = \\frac{5}{6}\\text{ jam}</span>. Coret <span class=\"math-inline\">42 \\div 6 = 7</span>, lalu <span class=\"math-inline\">7 \\times 5 = 35\\text{ km}</span>."
+        },
+        {
+          id: "J-14",
+          q: "Sebuah perahu motor melaju dengan kecepatan <span class=\"math-inline\">24\\text{ km/jam}</span> dari pukul <span class=\"math-inline\">13.40</span> sampai pukul <span class=\"math-inline\">15.10</span>. Jarak yang ditempuh perahu adalah...",
+          options: ["<span class=\"math-inline\">36\\text{ km}</span>", "<span class=\"math-inline\">30\\text{ km}</span>", "<span class=\"math-inline\">42\\text{ km}</span>", "<span class=\"math-inline\">48\\text{ km}</span>"],
+          exp: "Dari <span class=\"math-inline\">13.40</span> ke <span class=\"math-inline\">15.10</span> adalah <span class=\"math-inline\">1\\text{ jam } 30\\text{ menit} = 1{,}5\\text{ jam}</span>. <span class=\"math-inline\">J = 24 \\times 1{,}5 = 36\\text{ km}</span>."
+        },
+        {
+          id: "J-15",
+          q: "Kereta listrik (KRL) melaju dengan kecepatan <span class=\"math-inline\">75\\text{ km/jam}</span> selama <span class=\"math-inline\">12\\text{ menit}</span>. Berapa jarak antardua stasiun yang dilalui?",
+          options: ["<span class=\"math-inline\">15\\text{ km}</span>", "<span class=\"math-inline\">12\\text{ km}</span>", "<span class=\"math-inline\">18\\text{ km}</span>", "<span class=\"math-inline\">25\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">12\\text{ menit} = \\frac{12}{60}\\text{ jam} = \\frac{1}{5}\\text{ jam}</span>. Maka <span class=\"math-inline\">J = 75 \\times \\frac{1}{5} = 15\\text{ km}</span>."
+        },
+        {
+          id: "J-16",
+          q: "Ayah menyetir mobil dengan kecepatan <span class=\"math-inline\">60\\text{ km/jam}</span> selama <span class=\"math-inline\">1\\text{ jam } 45\\text{ menit}</span>. Berapa jarak yang ditempuh Ayah?",
+          options: ["<span class=\"math-inline\">105\\text{ km}</span>", "<span class=\"math-inline\">95\\text{ km}</span>", "<span class=\"math-inline\">100\\text{ km}</span>", "<span class=\"math-inline\">115\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">1\\text{ jam } 45\\text{ menit} = 1\\frac{3}{4}\\text{ jam} = \\frac{7}{4}\\text{ jam}</span>. <span class=\"math-inline\">J = 60 \\times \\frac{7}{4} = 15 \\times 7 = 105\\text{ km}</span>."
+        },
+        {
+          id: "J-17",
+          q: "Sebuah truk logistik berangkat pukul <span class=\"math-inline\">06.00</span> dengan kecepatan <span class=\"math-inline\">50\\text{ km/jam}</span>. Di tengah jalan truk beristirahat <span class=\"math-inline\">30\\text{ menit}</span> dan tiba pukul <span class=\"math-inline\">10.30</span>. Berapa jarak yang ditempuh truk?",
+          options: ["<span class=\"math-inline\">200\\text{ km}</span>", "<span class=\"math-inline\">225\\text{ km}</span>", "<span class=\"math-inline\">175\\text{ km}</span>", "<span class=\"math-inline\">250\\text{ km}</span>"],
+          exp: "Total waktu = <span class=\"math-inline\">4\\text{ jam } 30\\text{ menit}</span>. Dikurangi istirahat <span class=\"math-inline\">30\\text{ menit}</span>, waktu jalan = <span class=\"math-inline\">4\\text{ jam}</span>. <span class=\"math-inline\">J = 50 \\times 4 = 200\\text{ km}</span>."
+        },
+        {
+          id: "J-18",
+          q: "Sari bersepeda santai dengan kecepatan <span class=\"math-inline\">200\\text{ m/menit}</span> selama <span class=\"math-inline\">18\\text{ menit}</span>. Berapa meter jarak yang ditempuh Sari?",
+          options: ["<span class=\"math-inline\">3.600\\text{ m}</span>", "<span class=\"math-inline\">2.600\\text{ m}</span>", "<span class=\"math-inline\">3.200\\text{ m}</span>", "<span class=\"math-inline\">4.000\\text{ m}</span>"],
+          exp: "<span class=\"math-inline\">J = 200\\text{ m/menit} \\times 18\\text{ menit} = 3.600\\text{ m}</span>."
+        },
+        {
+          id: "J-19",
+          q: "Sebuah helikopter terbang dengan kecepatan <span class=\"math-inline\">180\\text{ km/jam}</span> selama <span class=\"math-inline\">40\\text{ menit}</span>. Berapa jarak yang ditempuh helikopter?",
+          options: ["<span class=\"math-inline\">120\\text{ km}</span>", "<span class=\"math-inline\">108\\text{ km}</span>", "<span class=\"math-inline\">135\\text{ km}</span>", "<span class=\"math-inline\">140\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">40\\text{ menit} = \\frac{2}{3}\\text{ jam}</span>. Coret <span class=\"math-inline\">180 \\div 3 = 60</span>, lalu <span class=\"math-inline\">60 \\times 2 = 120\\text{ km}</span>."
+        },
+        {
+          id: "J-20",
+          q: "Motor balap melaju dengan kecepatan <span class=\"math-inline\">108\\text{ km/jam}</span> selama <span class=\"math-inline\">5\\text{ menit}</span>. Berapa kilometer jarak lintasan yang ditempuh?",
+          options: ["<span class=\"math-inline\">9\\text{ km}</span>", "<span class=\"math-inline\">8\\text{ km}</span>", "<span class=\"math-inline\">10\\text{ km}</span>", "<span class=\"math-inline\">12\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">5\\text{ menit} = \\frac{5}{60}\\text{ jam} = \\frac{1}{12}\\text{ jam}</span>. <span class=\"math-inline\">J = 108 \\times \\frac{1}{12} = 9\\text{ km}</span>."
+        },
+        {
+          id: "J-21",
+          q: "Edo berjalan dengan kecepatan <span class=\"math-inline\">4{,}5\\text{ km/jam}</span> selama <span class=\"math-inline\">2\\text{ jam } 20\\text{ menit}</span>. Berapa jarak yang ditempuh Edo?",
+          options: ["<span class=\"math-inline\">10{,}5\\text{ km}</span>", "<span class=\"math-inline\">9{,}5\\text{ km}</span>", "<span class=\"math-inline\">11{,}0\\text{ km}</span>", "<span class=\"math-inline\">12{,}5\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">2\\text{ jam } 20\\text{ menit} = 2\\frac{1}{3}\\text{ jam} = \\frac{7}{3}\\text{ jam}</span>. <span class=\"math-inline\">J = 4{,}5 \\times \\frac{7}{3} = 1{,}5 \\times 7 = 10{,}5\\text{ km}</span>."
+        },
+        {
+          id: "J-22",
+          q: "Sebuah mobil melaju pada jam pertama dengan kecepatan <span class=\"math-inline\">60\\text{ km/jam}</span>, lalu pada <span class=\"math-inline\">2\\text{ jam}</span> berikutnya dengan kecepatan <span class=\"math-inline\">75\\text{ km/jam}</span>. Total jarak yang ditempuh adalah...",
+          options: ["<span class=\"math-inline\">210\\text{ km}</span>", "<span class=\"math-inline\">135\\text{ km}</span>", "<span class=\"math-inline\">195\\text{ km}</span>", "<span class=\"math-inline\">225\\text{ km}</span>"],
+          exp: "Jarak tahap 1 = <span class=\"math-inline\">60 \\times 1 = 60\\text{ km}</span>. Jarak tahap 2 = <span class=\"math-inline\">75 \\times 2 = 150\\text{ km}</span>. Total = <span class=\"math-inline\">60 + 150 = 210\\text{ km}</span>."
+        },
+        {
+          id: "J-23",
+          q: "Lari estafet dilakukan selama <span class=\"math-inline\">4\\text{ menit}</span> dengan kecepatan rata-rata <span class=\"math-inline\">5\\text{ m/detik}</span>. Berapa meter total jarak lari estafet tersebut?",
+          options: ["<span class=\"math-inline\">1.200\\text{ m}</span>", "<span class=\"math-inline\">200\\text{ m}</span>", "<span class=\"math-inline\">1.000\\text{ m}</span>", "<span class=\"math-inline\">1.500\\text{ m}</span>"],
+          exp: "<span class=\"math-inline\">4\\text{ menit} = 4 \\times 60 = 240\\text{ detik}</span>. Maka <span class=\"math-inline\">J = 5 \\times 240 = 1.200\\text{ m}</span>."
+        },
+        {
+          id: "J-24",
+          q: "Bus sekolah melaju dengan kecepatan <span class=\"math-inline\">45\\text{ km/jam}</span> selama <span class=\"math-inline\">48\\text{ menit}</span>. Berapa kilometer jarak rute bus sekolah?",
+          options: ["<span class=\"math-inline\">36\\text{ km}</span>", "<span class=\"math-inline\">32\\text{ km}</span>", "<span class=\"math-inline\">38\\text{ km}</span>", "<span class=\"math-inline\">40\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">48\\text{ menit} = \\frac{48}{60}\\text{ jam} = \\frac{4}{5}\\text{ jam}</span>. <span class=\"math-inline\">J = 45 \\times \\frac{4}{5} = 9 \\times 4 = 36\\text{ km}</span>."
+        },
+        {
+          id: "J-25",
+          q: "Dua kota dihubungkan jalan tol. Mobil A melaju <span class=\"math-inline\">80\\text{ km/jam}</span> selama <span class=\"math-inline\">1\\text{ jam } 30\\text{ menit}</span> dan masih kurang <span class=\"math-inline\">25\\text{ km}</span> untuk sampai. Berapa jarak kedua kota tersebut?",
+          options: ["<span class=\"math-inline\">145\\text{ km}</span>", "<span class=\"math-inline\">120\\text{ km}</span>", "<span class=\"math-inline\">135\\text{ km}</span>", "<span class=\"math-inline\">160\\text{ km}</span>"],
+          exp: "Jarak yang sudah ditempuh = <span class=\"math-inline\">80 \\times 1{,}5 = 120\\text{ km}</span>. Total jarak = <span class=\"math-inline\">120 + 25 = 145\\text{ km}</span>."
+        },
+        {
+          id: "J-26",
+          q: "Sebuah sepeda motor melaju dengan kecepatan <span class=\"math-inline\">54\\text{ km/jam}</span> selama <span class=\"math-inline\">25\\text{ menit}</span>. Jarak yang ditempuh motor adalah...",
+          options: ["<span class=\"math-inline\">22{,}5\\text{ km}</span>", "<span class=\"math-inline\">20{,}5\\text{ km}</span>", "<span class=\"math-inline\">24{,}0\\text{ km}</span>", "<span class=\"math-inline\">25{,}0\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">25\\text{ menit} = \\frac{25}{60}\\text{ jam} = \\frac{5}{12}\\text{ jam}</span>. <span class=\"math-inline\">J = 54 \\times \\frac{5}{12} = 4{,}5 \\times 5 = 22{,}5\\text{ km}</span>."
+        },
+        {
+          id: "J-27",
+          q: "Kereta barang bergerak dengan kecepatan <span class=\"math-inline\">40\\text{ km/jam}</span> selama <span class=\"math-inline\">4\\text{ jam } 15\\text{ menit}</span>. Berapa jarak yang ditempuh kereta barang?",
+          options: ["<span class=\"math-inline\">170\\text{ km}</span>", "<span class=\"math-inline\">160\\text{ km}</span>", "<span class=\"math-inline\">175\\text{ km}</span>", "<span class=\"math-inline\">180\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">4\\text{ jam } 15\\text{ menit} = 4\\frac{1}{4}\\text{ jam} = \\frac{17}{4}\\text{ jam}</span>. <span class=\"math-inline\">J = 40 \\times \\frac{17}{4} = 10 \\times 17 = 170\\text{ km}</span>."
+        },
+        {
+          id: "J-28",
+          q: "Sebuah mobil ambulance melaju <span class=\"math-inline\">90\\text{ km/jam}</span> selama <span class=\"math-inline\">16\\text{ menit}</span> menuju rumah sakit. Berapa kilometer jarak yang ditempuhnya?",
+          options: ["<span class=\"math-inline\">24\\text{ km}</span>", "<span class=\"math-inline\">20\\text{ km}</span>", "<span class=\"math-inline\">27\\text{ km}</span>", "<span class=\"math-inline\">30\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">16\\text{ menit} = \\frac{16}{60}\\text{ jam} = \\frac{4}{15}\\text{ jam}</span>. <span class=\"math-inline\">J = 90 \\times \\frac{4}{15} = 6 \\times 4 = 24\\text{ km}</span>."
+        },
+        {
+          id: "J-29",
+          q: "Kapal pesiar berlayar dengan kecepatan <span class=\"math-inline\">35\\text{ km/jam}</span> selama <span class=\"math-inline\">3\\text{ jam } 36\\text{ menit}</span>. Berapa jarak yang ditempuh kapal pesiar?",
+          options: ["<span class=\"math-inline\">126\\text{ km}</span>", "<span class=\"math-inline\">115\\text{ km}</span>", "<span class=\"math-inline\">120\\text{ km}</span>", "<span class=\"math-inline\">132\\text{ km}</span>"],
+          exp: "<span class=\"math-inline\">36\\text{ menit} = \\frac{36}{60} = \\frac{3}{5}\\text{ jam}</span>, sehingga waktu = <span class=\"math-inline\">3\\frac{3}{5} = \\frac{18}{5}\\text{ jam}</span>. <span class=\"math-inline\">J = 35 \\times \\frac{18}{5} = 7 \\times 18 = 126\\text{ km}</span>."
+        },
+        {
+          id: "J-30",
+          q: "Mobil A (<span class=\"math-inline\">65\\text{ km/jam}</span>) dan Mobil B (<span class=\"math-inline\">55\\text{ km/jam}</span>) berangkat dari titik yang sama ke arah berlawanan selama <span class=\"math-inline\">2\\text{ jam}</span>. Berapa jarak kedua mobil sekarang?",
+          options: ["<span class=\"math-inline\">240\\text{ km}</span>", "<span class=\"math-inline\">20\\text{ km}</span>", "<span class=\"math-inline\">120\\text{ km}</span>", "<span class=\"math-inline\">220\\text{ km}</span>"],
+          exp: "Arah berlawanan berarti jarak dijumlahkan: <span class=\"math-inline\">(65 + 55) \\times 2 = 120 \\times 2 = 240\\text{ km}</span>."
+        }
+      ],
+
+      kecepatan: [
+        {
+          id: "K-01",
+          q: "Sebuah mobil menempuh jarak <span class=\"math-inline\">240\\text{ km}</span> dalam waktu <span class=\"math-inline\">4\\text{ jam}</span>. Berapa kecepatan rata-rata mobil tersebut?",
+          options: ["<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">50\\text{ km/jam}</span>", "<span class=\"math-inline\">70\\text{ km/jam}</span>", "<span class=\"math-inline\">80\\text{ km/jam}</span>"],
+          exp: "Gunakan rumus <span class=\"math-inline\">K = J \\div W = 240 \\div 4 = 60\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-02",
+          q: "Pelari sprint menempuh jarak <span class=\"math-inline\">200\\text{ m}</span> dalam waktu <span class=\"math-inline\">25\\text{ detik}</span>. Berapa kecepatan pelari tersebut?",
+          options: ["<span class=\"math-inline\">8\\text{ m/detik}</span>", "<span class=\"math-inline\">6\\text{ m/detik}</span>", "<span class=\"math-inline\">10\\text{ m/detik}</span>", "<span class=\"math-inline\">12\\text{ m/detik}</span>"],
+          exp: "<span class=\"math-inline\">K = 200\\text{ m} \\div 25\\text{ detik} = 8\\text{ m/detik}</span>."
+        },
+        {
+          id: "K-03",
+          q: "Sepeda motor menempuh jarak <span class=\"math-inline\">30\\text{ km}</span> dalam waktu <span class=\"math-inline\">45\\text{ menit}</span>. Berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatan motor tersebut?",
+          options: ["<span class=\"math-inline\">40\\text{ km/jam}</span>", "<span class=\"math-inline\">35\\text{ km/jam}</span>", "<span class=\"math-inline\">45\\text{ km/jam}</span>", "<span class=\"math-inline\">50\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">45\\text{ menit} = \\frac{3}{4}\\text{ jam}</span>. <span class=\"math-inline\">K = 30 \\div \\frac{3}{4} = 30 \\times \\frac{4}{3} = 10 \\times 4 = 40\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-04",
+          q: "Bus pariwisata berangkat pukul <span class=\"math-inline\">07.30</span> dan tiba di lokasi wisata sejauh <span class=\"math-inline\">165\\text{ km}</span> pada pukul <span class=\"math-inline\">10.30</span>. Kecepatan rata-rata bus adalah...",
+          options: ["<span class=\"math-inline\">55\\text{ km/jam}</span>", "<span class=\"math-inline\">50\\text{ km/jam}</span>", "<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">65\\text{ km/jam}</span>"],
+          exp: "Lama perjalanan = <span class=\"math-inline\">10.30 - 07.30 = 3\\text{ jam}</span>. <span class=\"math-inline\">K = 165 \\div 3 = 55\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-05",
+          q: "Jarak rumah Nisa ke sekolah <span class=\"math-inline\">1{,}8\\text{ km}</span>. Jika Nisa bersepeda selama <span class=\"math-inline\">15\\text{ menit}</span>, berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatan Nisa?",
+          options: ["<span class=\"math-inline\">7{,}2\\text{ km/jam}</span>", "<span class=\"math-inline\">6{,}4\\text{ km/jam}</span>", "<span class=\"math-inline\">8{,}0\\text{ km/jam}</span>", "<span class=\"math-inline\">9{,}0\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">15\\text{ menit} = \\frac{1}{4}\\text{ jam}</span>. <span class=\"math-inline\">K = 1{,}8 \\div \\frac{1}{4} = 1{,}8 \\times 4 = 7{,}2\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-06",
+          q: "Kereta cepat menempuh jarak <span class=\"math-inline\">140\\text{ km}</span> dalam waktu <span class=\"math-inline\">40\\text{ menit}</span>. Kecepatan kereta cepat tersebut adalah...",
+          options: ["<span class=\"math-inline\">210\\text{ km/jam}</span>", "<span class=\"math-inline\">180\\text{ km/jam}</span>", "<span class=\"math-inline\">200\\text{ km/jam}</span>", "<span class=\"math-inline\">240\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">40\\text{ menit} = \\frac{2}{3}\\text{ jam}</span>. <span class=\"math-inline\">K = 140 \\div \\frac{2}{3} = 140 \\times \\frac{3}{2} = 70 \\times 3 = 210\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-07",
+          q: "Sebuah mobil menempuh jarak <span class=\"math-inline\">195\\text{ km}</span> dalam waktu <span class=\"math-inline\">2\\text{ jam } 30\\text{ menit}</span>. Berapa kecepatan rata-rata mobil tersebut?",
+          options: ["<span class=\"math-inline\">78\\text{ km/jam}</span>", "<span class=\"math-inline\">75\\text{ km/jam}</span>", "<span class=\"math-inline\">82\\text{ km/jam}</span>", "<span class=\"math-inline\">85\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">2\\text{ jam } 30\\text{ menit} = \\frac{5}{2}\\text{ jam}</span>. <span class=\"math-inline\">K = 195 \\div \\frac{5}{2} = 195 \\times \\frac{2}{5} = 39 \\times 2 = 78\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-08",
+          q: "Kecepatan <span class=\"math-inline\">72\\text{ km/jam}</span> jika diubah ke satuan <span class=\"math-inline\">\\text{m/detik}</span> adalah...",
+          options: ["<span class=\"math-inline\">20\\text{ m/detik}</span>", "<span class=\"math-inline\">15\\text{ m/detik}</span>", "<span class=\"math-inline\">25\\text{ m/detik}</span>", "<span class=\"math-inline\">30\\text{ m/detik}</span>"],
+          exp: "<span class=\"math-inline\">72\\text{ km} = 72.000\\text{ m}</span> dan <span class=\"math-inline\">1\\text{ jam} = 3.600\\text{ detik}</span>. <span class=\"math-inline\">72.000 \\div 3.600 = 20\\text{ m/detik}</span>."
+        },
+        {
+          id: "K-09",
+          q: "Kecepatan <span class=\"math-inline\">15\\text{ m/detik}</span> jika diubah ke satuan <span class=\"math-inline\">\\text{km/jam}</span> adalah...",
+          options: ["<span class=\"math-inline\">54\\text{ km/jam}</span>", "<span class=\"math-inline\">45\\text{ km/jam}</span>", "<span class=\"math-inline\">50\\text{ km/jam}</span>", "<span class=\"math-inline\">60\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">15 \\times 3.600\\text{ m} = 54.000\\text{ m/jam} = 54\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-10",
+          q: "Beni berjalan sejauh <span class=\"math-inline\">2.400\\text{ m}</span> dalam waktu <span class=\"math-inline\">30\\text{ menit}</span>. Berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatan berjalan Beni?",
+          options: ["<span class=\"math-inline\">4{,}8\\text{ km/jam}</span>", "<span class=\"math-inline\">4{,}2\\text{ km/jam}</span>", "<span class=\"math-inline\">5{,}0\\text{ km/jam}</span>", "<span class=\"math-inline\">6{,}0\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">2.400\\text{ m} = 2{,}4\\text{ km}</span> dan <span class=\"math-inline\">30\\text{ menit} = \\frac{1}{2}\\text{ jam}</span>. <span class=\"math-inline\">K = 2{,}4 \\div \\frac{1}{2} = 4{,}8\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-11",
+          q: "Truk pengangkut barang berangkat pukul <span class=\"math-inline\">09.00</span> menempuh jarak <span class=\"math-inline\">220\\text{ km}</span> dan tiba pukul <span class=\"math-inline\">13.30</span> setelah beristirahat <span class=\"math-inline\">30\\text{ menit}</span>. Kecepatan rata-rata truk saat melaju adalah...",
+          options: ["<span class=\"math-inline\">55\\text{ km/jam}</span>", "<span class=\"math-inline\">48{,}8\\text{ km/jam}</span>", "<span class=\"math-inline\">50\\text{ km/jam}</span>", "<span class=\"math-inline\">60\\text{ km/jam}</span>"],
+          exp: "Total waktu = <span class=\"math-inline\">4\\text{ jam } 30\\text{ menit}</span>. Dikurangi istirahat <span class=\"math-inline\">30\\text{ menit}</span> menjadi <span class=\"math-inline\">4\\text{ jam}</span>. <span class=\"math-inline\">K = 220 \\div 4 = 55\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-12",
+          q: "Sebuah perahu menyeberangi sungai selebar <span class=\"math-inline\">450\\text{ m}</span> dalam waktu <span class=\"math-inline\">3\\text{ menit}</span>. Kecepatan perahu dalam satuan <span class=\"math-inline\">\\text{m/detik}</span> adalah...",
+          options: ["<span class=\"math-inline\">2{,}5\\text{ m/detik}</span>", "<span class=\"math-inline\">1{,}5\\text{ m/detik}</span>", "<span class=\"math-inline\">3{,}0\\text{ m/detik}</span>", "<span class=\"math-inline\">5{,}0\\text{ m/detik}</span>"],
+          exp: "<span class=\"math-inline\">3\\text{ menit} = 180\\text{ detik}</span>. <span class=\"math-inline\">K = 450 \\div 180 = \\frac{45}{18} = \\frac{5}{2} = 2{,}5\\text{ m/detik}</span>."
+        },
+        {
+          id: "K-13",
+          q: "Pesawat kargo menempuh jarak <span class=\"math-inline\">1.350\\text{ km}</span> dalam waktu <span class=\"math-inline\">2\\text{ jam } 15\\text{ menit}</span>. Berapa kecepatan pesawat kargo tersebut?",
+          options: ["<span class=\"math-inline\">600\\text{ km/jam}</span>", "<span class=\"math-inline\">550\\text{ km/jam}</span>", "<span class=\"math-inline\">625\\text{ km/jam}</span>", "<span class=\"math-inline\">650\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">2\\text{ jam } 15\\text{ menit} = 2\\frac{1}{4} = \\frac{9}{4}\\text{ jam}</span>. <span class=\"math-inline\">K = 1.350 \\div \\frac{9}{4} = 150 \\times 4 = 600\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-14",
+          q: "Sebuah mobil menempuh jarak <span class=\"math-inline\">16\\text{ km}</span> dalam waktu <span class=\"math-inline\">12\\text{ menit}</span>. Berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatan mobil tersebut?",
+          options: ["<span class=\"math-inline\">80\\text{ km/jam}</span>", "<span class=\"math-inline\">72\\text{ km/jam}</span>", "<span class=\"math-inline\">75\\text{ km/jam}</span>", "<span class=\"math-inline\">96\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">12\\text{ menit} = \\frac{1}{5}\\text{ jam}</span>. <span class=\"math-inline\">K = 16 \\div \\frac{1}{5} = 16 \\times 5 = 80\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-15",
+          q: "Atlet renang menempuh lintasan <span class=\"math-inline\">100\\text{ m}</span> dalam waktu <span class=\"math-inline\">50\\text{ detik}</span>. Kecepatan atlet renang tersebut adalah...",
+          options: ["<span class=\"math-inline\">2\\text{ m/detik}</span>", "<span class=\"math-inline\">0{,}5\\text{ m/detik}</span>", "<span class=\"math-inline\">4\\text{ m/detik}</span>", "<span class=\"math-inline\">5\\text{ m/detik}</span>"],
+          exp: "<span class=\"math-inline\">K = 100\\text{ m} \\div 50\\text{ detik} = 2\\text{ m/detik}</span>."
+        },
+        {
+          id: "K-16",
+          q: "Jarak Kota A ke Kota B adalah <span class=\"math-inline\">112\\text{ km}</span>. Jika ditempuh sepeda motor selama <span class=\"math-inline\">1\\text{ jam } 45\\text{ menit}</span>, kecepatannya adalah...",
+          options: ["<span class=\"math-inline\">64\\text{ km/jam}</span>", "<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">68\\text{ km/jam}</span>", "<span class=\"math-inline\">70\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">1\\text{ jam } 45\\text{ menit} = \\frac{7}{4}\\text{ jam}</span>. <span class=\"math-inline\">K = 112 \\div \\frac{7}{4} = 16 \\times 4 = 64\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-17",
+          q: "Sebuah bus menempuh <span class=\"math-inline\">50\\text{ km}</span> pertama dalam <span class=\"math-inline\">1\\text{ jam}</span> dan <span class=\"math-inline\">70\\text{ km}</span> berikutnya dalam <span class=\"math-inline\">1\\text{ jam}</span>. Kecepatan rata-rata seluruh perjalanan adalah...",
+          options: ["<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">55\\text{ km/jam}</span>", "<span class=\"math-inline\">65\\text{ km/jam}</span>", "<span class=\"math-inline\">70\\text{ km/jam}</span>"],
+          exp: "Total jarak = <span class=\"math-inline\">50 + 70 = 120\\text{ km}</span>, total waktu = <span class=\"math-inline\">2\\text{ jam}</span>. <span class=\"math-inline\">K = 120 \\div 2 = 60\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-18",
+          q: "Sebuah drone menempuh jarak <span class=\"math-inline\">3{,}6\\text{ km}</span> dalam waktu <span class=\"math-inline\">6\\text{ menit}</span>. Berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatan drone tersebut?",
+          options: ["<span class=\"math-inline\">36\\text{ km/jam}</span>", "<span class=\"math-inline\">21{,}6\\text{ km/jam}</span>", "<span class=\"math-inline\">40\\text{ km/jam}</span>", "<span class=\"math-inline\">60\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">6\\text{ menit} = \\frac{1}{10}\\text{ jam}</span>. <span class=\"math-inline\">K = 3{,}6 \\div \\frac{1}{10} = 36\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-19",
+          q: "Rina berlari mengelilingi lapangan sejauh <span class=\"math-inline\">1.500\\text{ m}</span> dalam waktu <span class=\"math-inline\">10\\text{ menit}</span>. Berapa <span class=\"math-inline\">\\text{m/menit}</span> kecepatan Rina?",
+          options: ["<span class=\"math-inline\">150\\text{ m/menit}</span>", "<span class=\"math-inline\">120\\text{ m/menit}</span>", "<span class=\"math-inline\">180\\text{ m/menit}</span>", "<span class=\"math-inline\">200\\text{ m/menit}</span>"],
+          exp: "<span class=\"math-inline\">K = 1.500\\text{ m} \\div 10\\text{ menit} = 150\\text{ m/menit}</span>."
+        },
+        {
+          id: "K-20",
+          q: "Sebuah kereta api berangkat pukul <span class=\"math-inline\">14.20</span> dan tiba pukul <span class=\"math-inline\">17.00</span> setelah menempuh jarak <span class=\"math-inline\">224\\text{ km}</span>. Kecepatan kereta api tersebut adalah...",
+          options: ["<span class=\"math-inline\">84\\text{ km/jam}</span>", "<span class=\"math-inline\">80\\text{ km/jam}</span>", "<span class=\"math-inline\">88\\text{ km/jam}</span>", "<span class=\"math-inline\">90\\text{ km/jam}</span>"],
+          exp: "Waktu = <span class=\"math-inline\">2\\text{ jam } 40\\text{ menit} = 2\\frac{2}{3} = \\frac{8}{3}\\text{ jam}</span>. <span class=\"math-inline\">K = 224 \\div \\frac{8}{3} = 28 \\times 3 = 84\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-21",
+          q: "Mobil pemadam kebakaran menempuh jarak <span class=\"math-inline\">14\\text{ km}</span> dalam waktu <span class=\"math-inline\">10\\text{ menit}</span>. Kecepatan mobil tersebut adalah...",
+          options: ["<span class=\"math-inline\">84\\text{ km/jam}</span>", "<span class=\"math-inline\">70\\text{ km/jam}</span>", "<span class=\"math-inline\">80\\text{ km/jam}</span>", "<span class=\"math-inline\">90\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">10\\text{ menit} = \\frac{1}{6}\\text{ jam}</span>. <span class=\"math-inline\">K = 14 \\div \\frac{1}{6} = 14 \\times 6 = 84\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-22",
+          q: "Jarak dua pelabuhan adalah <span class=\"math-inline\">135\\text{ km}</span>. Kapal cepat menempuhnya dalam <span class=\"math-inline\">3\\text{ jam } 45\\text{ menit}</span>. Kecepatan kapal cepat tersebut adalah...",
+          options: ["<span class=\"math-inline\">36\\text{ km/jam}</span>", "<span class=\"math-inline\">32\\text{ km/jam}</span>", "<span class=\"math-inline\">40\\text{ km/jam}</span>", "<span class=\"math-inline\">45\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">3\\text{ jam } 45\\text{ menit} = 3\\frac{3}{4} = \\frac{15}{4}\\text{ jam}</span>. <span class=\"math-inline\">K = 135 \\div \\frac{15}{4} = 9 \\times 4 = 36\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-23",
+          q: "Sebuah kendaraan menempuh jarak <span class=\"math-inline\">25\\text{ km}</span> dalam waktu <span class=\"math-inline\">20\\text{ menit}</span>. Berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatannya?",
+          options: ["<span class=\"math-inline\">75\\text{ km/jam}</span>", "<span class=\"math-inline\">65\\text{ km/jam}</span>", "<span class=\"math-inline\">70\\text{ km/jam}</span>", "<span class=\"math-inline\">80\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">20\\text{ menit} = \\frac{1}{3}\\text{ jam}</span>. <span class=\"math-inline\">K = 25 \\div \\frac{1}{3} = 25 \\times 3 = 75\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-24",
+          q: "Sepeda listrik melaju sejauh <span class=\"math-inline\">9\\text{ km}</span> dalam waktu <span class=\"math-inline\">18\\text{ menit}</span>. Kecepatan sepeda listrik tersebut adalah...",
+          options: ["<span class=\"math-inline\">30\\text{ km/jam}</span>", "<span class=\"math-inline\">25\\text{ km/jam}</span>", "<span class=\"math-inline\">32\\text{ km/jam}</span>", "<span class=\"math-inline\">36\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">18\\text{ menit} = \\frac{18}{60} = \\frac{3}{10}\\text{ jam}</span>. <span class=\"math-inline\">K = 9 \\div \\frac{3}{10} = 3 \\times 10 = 30\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-25",
+          q: "Ayah mengendarai mobil sejauh <span class=\"math-inline\">270\\text{ km}</span> dalam <span class=\"math-inline\">4\\text{ jam } 30\\text{ menit}</span>. Kecepatan rata-rata mobil Ayah adalah...",
+          options: ["<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">55\\text{ km/jam}</span>", "<span class=\"math-inline\">65\\text{ km/jam}</span>", "<span class=\"math-inline\">67{,}5\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">4\\text{ jam } 30\\text{ menit} = \\frac{9}{2}\\text{ jam}</span>. <span class=\"math-inline\">K = 270 \\div \\frac{9}{2} = 30 \\times 2 = 60\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-26",
+          q: "Sebuah mobil melaju selama <span class=\"math-inline\">24\\text{ menit}</span> dan menempuh jarak <span class=\"math-inline\">28\\text{ km}</span>. Berapa <span class=\"math-inline\">\\text{km/jam}</span> kecepatan mobil itu?",
+          options: ["<span class=\"math-inline\">70\\text{ km/jam}</span>", "<span class=\"math-inline\">64\\text{ km/jam}</span>", "<span class=\"math-inline\">68\\text{ km/jam}</span>", "<span class=\"math-inline\">72\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">24\\text{ menit} = \\frac{24}{60} = \\frac{2}{5}\\text{ jam}</span>. <span class=\"math-inline\">K = 28 \\div \\frac{2}{5} = 14 \\times 5 = 70\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-27",
+          q: "Seekor burung merpati terbang sejauh <span class=\"math-inline\">48\\text{ km}</span> dalam waktu <span class=\"math-inline\">40\\text{ menit}</span>. Kecepatan terbang merpati adalah...",
+          options: ["<span class=\"math-inline\">72\\text{ km/jam}</span>", "<span class=\"math-inline\">64\\text{ km/jam}</span>", "<span class=\"math-inline\">68\\text{ km/jam}</span>", "<span class=\"math-inline\">80\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">40\\text{ menit} = \\frac{2}{3}\\text{ jam}</span>. <span class=\"math-inline\">K = 48 \\div \\frac{2}{3} = 24 \\times 3 = 72\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-28",
+          q: "Jarak rumah Tono ke taman <span class=\"math-inline\">600\\text{ m}</span>. Tono berjalan santai dan tiba dalam <span class=\"math-inline\">12\\text{ menit}</span>. Kecepatan berjalan Tono dalam <span class=\"math-inline\">\\text{km/jam}</span> adalah...",
+          options: ["<span class=\"math-inline\">3\\text{ km/jam}</span>", "<span class=\"math-inline\">2{,}5\\text{ km/jam}</span>", "<span class=\"math-inline\">4\\text{ km/jam}</span>", "<span class=\"math-inline\">5\\text{ km/jam}</span>"],
+          exp: "<span class=\"math-inline\">600\\text{ m} = 0{,}6\\text{ km}</span> dan <span class=\"math-inline\">12\\text{ menit} = \\frac{1}{5}\\text{ jam}</span>. <span class=\"math-inline\">K = 0{,}6 \\div \\frac{1}{5} = 3\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-29",
+          q: "Dua kota berjarak <span class=\"math-inline\">315\\text{ km}</span>. Bus malam berangkat pukul <span class=\"math-inline\">21.15</span> dan tiba pukul <span class=\"math-inline\">02.30</span> keesokan harinya tanpa berhenti. Kecepatan rata-rata bus malam adalah...",
+          options: ["<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">55\\text{ km/jam}</span>", "<span class=\"math-inline\">63\\text{ km/jam}</span>", "<span class=\"math-inline\">65\\text{ km/jam}</span>"],
+          exp: "Dari <span class=\"math-inline\">21.15</span> ke <span class=\"math-inline\">02.30</span> = <span class=\"math-inline\">5\\text{ jam } 15\\text{ menit} = \\frac{21}{4}\\text{ jam}</span>. <span class=\"math-inline\">K = 315 \\div \\frac{21}{4} = 15 \\times 4 = 60\\text{ km/jam}</span>."
+        },
+        {
+          id: "K-30",
+          q: "Mobil A dan Mobil B berangkat bersamaan menempuh jarak <span class=\"math-inline\">180\\text{ km}</span>. Mobil A tiba dalam <span class=\"math-inline\">3\\text{ jam}</span>, sedangkan Mobil B tiba <span class=\"math-inline\">36\\text{ menit}</span> lebih cepat dari Mobil A. Kecepatan Mobil B adalah...",
+          options: ["<span class=\"math-inline\">75\\text{ km/jam}</span>", "<span class=\"math-inline\">60\\text{ km/jam}</span>", "<span class=\"math-inline\">70\\text{ km/jam}</span>", "<span class=\"math-inline\">80\\text{ km/jam}</span>"],
+          exp: "Waktu Mobil B = <span class=\"math-inline\">3\\text{ jam} - 36\\text{ menit} = 2\\text{ jam } 24\\text{ menit} = 2\\frac{2}{5} = \\frac{12}{5}\\text{ jam}</span>. <span class=\"math-inline\">K_B = 180 \\div \\frac{12}{5} = 15 \\times 5 = 75\\text{ km/jam}</span>."
+        }
+      ],
+
+      waktu: [
+        {
+          id: "W-01",
+          q: "Jarak Kota P ke Kota Q adalah <span class=\"math-inline\">210\\text{ km}</span>. Sebuah bus melaju dengan kecepatan <span class=\"math-inline\">70\\text{ km/jam}</span>. Berapa waktu yang dibutuhkan bus?",
+          options: ["<span class=\"math-inline\">3\\text{ jam}</span>", "<span class=\"math-inline\">2\\text{ jam}</span>", "<span class=\"math-inline\">4\\text{ jam}</span>", "<span class=\"math-inline\">3{,}5\\text{ jam}</span>"],
+          exp: "Gunakan rumus <span class=\"math-inline\">W = J \\div K = 210 \\div 70 = 3\\text{ jam}</span>."
+        },
+        {
+          id: "W-02",
+          q: "Lani bersepeda sejauh <span class=\"math-inline\">6\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">12\\text{ km/jam}</span>. Berapa menit waktu tempuh Lani?",
+          options: ["<span class=\"math-inline\">30\\text{ menit}</span>", "<span class=\"math-inline\">20\\text{ menit}</span>", "<span class=\"math-inline\">40\\text{ menit}</span>", "<span class=\"math-inline\">45\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = 6 \\div 12 = \\frac{1}{2}\\text{ jam} = 30\\text{ menit}</span>."
+        },
+        {
+          id: "W-03",
+          q: "Sebuah mobil melaju dengan kecepatan <span class=\"math-inline\">80\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">200\\text{ km}</span>. Berapa lama waktu perjalanan mobil tersebut?",
+          options: ["<span class=\"math-inline\">2\\text{ jam } 30\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 15\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 20\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 40\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{200}{80} = \\frac{5}{2}\\text{ jam} = 2\\frac{1}{2}\\text{ jam} = 2\\text{ jam } 30\\text{ menit}</span>."
+        },
+        {
+          id: "W-04",
+          q: "Ayah berangkat ke kantor pukul <span class=\"math-inline\">06.35</span> dengan kecepatan <span class=\"math-inline\">40\\text{ km/jam}</span>. Jika jarak kantor <span class=\"math-inline\">30\\text{ km}</span>, pukul berapa Ayah tiba di kantor?",
+          options: ["<span class=\"math-inline\">07.20</span>", "<span class=\"math-inline\">07.15</span>", "<span class=\"math-inline\">07.25</span>", "<span class=\"math-inline\">07.30</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{30}{40} = \\frac{3}{4}\\text{ jam} = 45\\text{ menit}</span>. Tiba = <span class=\"math-inline\">06.35 + 45\\text{ menit} = 07.20</span>."
+        },
+        {
+          id: "W-05",
+          q: "Seorang pelari menempuh lintasan <span class=\"math-inline\">800\\text{ m}</span> dengan kecepatan <span class=\"math-inline\">4\\text{ m/detik}</span>. Berapa menit waktu yang diperlukan pelari tersebut?",
+          options: ["<span class=\"math-inline\">3\\text{ menit } 20\\text{ detik}</span>", "<span class=\"math-inline\">2\\text{ menit } 40\\text{ detik}</span>", "<span class=\"math-inline\">3\\text{ menit } 40\\text{ detik}</span>", "<span class=\"math-inline\">4\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = 800 \\div 4 = 200\\text{ detik} = 3\\text{ menit } 20\\text{ detik}</span>."
+        },
+        {
+          id: "W-06",
+          q: "Kereta api melaju dengan kecepatan <span class=\"math-inline\">75\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">25\\text{ km}</span>. Berapa menit waktu tempuh kereta api?",
+          options: ["<span class=\"math-inline\">20\\text{ menit}</span>", "<span class=\"math-inline\">15\\text{ menit}</span>", "<span class=\"math-inline\">25\\text{ menit}</span>", "<span class=\"math-inline\">30\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{25}{75} = \\frac{1}{3}\\text{ jam} = 20\\text{ menit}</span>."
+        },
+        {
+          id: "W-07",
+          q: "Jarak dua kota adalah <span class=\"math-inline\">165\\text{ km}</span>. Sebuah bus melaju <span class=\"math-inline\">60\\text{ km/jam}</span> dan berangkat pukul <span class=\"math-inline\">08.10</span>. Pukul berapa bus tiba di tujuan?",
+          options: ["<span class=\"math-inline\">10.55</span>", "<span class=\"math-inline\">10.45</span>", "<span class=\"math-inline\">11.05</span>", "<span class=\"math-inline\">11.15</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{165}{60} = \\frac{11}{4}\\text{ jam} = 2\\text{ jam } 45\\text{ menit}</span>. Tiba = <span class=\"math-inline\">08.10 + 2\\text{ jam } 45\\text{ menit} = 10.55</span>."
+        },
+        {
+          id: "W-08",
+          q: "Sepeda motor melaju dengan kecepatan <span class=\"math-inline\">45\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">18\\text{ km}</span>. Berapa menit waktu perjalanannya?",
+          options: ["<span class=\"math-inline\">24\\text{ menit}</span>", "<span class=\"math-inline\">20\\text{ menit}</span>", "<span class=\"math-inline\">25\\text{ menit}</span>", "<span class=\"math-inline\">30\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{18}{45} = \\frac{2}{5}\\text{ jam} = \\frac{2}{5} \\times 60 = 24\\text{ menit}</span>."
+        },
+        {
+          id: "W-09",
+          q: "Siti berjalan kaki sejauh <span class=\"math-inline\">1{,}5\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">3\\text{ km/jam}</span>. Jika Siti mulai berjalan pukul <span class=\"math-inline\">15.45</span>, pukul berapa ia sampai?",
+          options: ["<span class=\"math-inline\">16.15</span>", "<span class=\"math-inline\">16.05</span>", "<span class=\"math-inline\">16.20</span>", "<span class=\"math-inline\">16.30</span>"],
+          exp: "<span class=\"math-inline\">W = 1{,}5 \\div 3 = 0{,}5\\text{ jam} = 30\\text{ menit}</span>. <span class=\"math-inline\">15.45 + 30\\text{ menit} = 16.15</span>."
+        },
+        {
+          id: "W-10",
+          q: "Sebuah kapal barang berlayar sejauh <span class=\"math-inline\">112\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">28\\text{ km/jam}</span>. Waktu pelayaran kapal tersebut adalah...",
+          options: ["<span class=\"math-inline\">4\\text{ jam}</span>", "<span class=\"math-inline\">3\\text{ jam}</span>", "<span class=\"math-inline\">4{,}5\\text{ jam}</span>", "<span class=\"math-inline\">5\\text{ jam}</span>"],
+          exp: "<span class=\"math-inline\">W = 112 \\div 28 = 4\\text{ jam}</span>."
+        },
+        {
+          id: "W-11",
+          q: "Pesawat terbang menempuh jarak <span class=\"math-inline\">1.050\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">600\\text{ km/jam}</span>. Berapa lama waktu penerbangan tersebut?",
+          options: ["<span class=\"math-inline\">1\\text{ jam } 45\\text{ menit}</span>", "<span class=\"math-inline\">1\\text{ jam } 30\\text{ menit}</span>", "<span class=\"math-inline\">1\\text{ jam } 50\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{1.050}{600} = \\frac{7}{4}\\text{ jam} = 1\\frac{3}{4}\\text{ jam} = 1\\text{ jam } 45\\text{ menit}</span>."
+        },
+        {
+          id: "W-12",
+          q: "Truk berangkat pukul <span class=\"math-inline\">05.30</span> menempuh jarak <span class=\"math-inline\">150\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">50\\text{ km/jam}</span>. Di perjalanan truk berhenti <span class=\"math-inline\">25\\text{ menit}</span> untuk mengisi bahan bakar. Pukul berapa truk tiba?",
+          options: ["<span class=\"math-inline\">08.55</span>", "<span class=\"math-inline\">08.30</span>", "<span class=\"math-inline\">08.45</span>", "<span class=\"math-inline\">09.05</span>"],
+          exp: "Waktu jalan = <span class=\"math-inline\">150 \\div 50 = 3\\text{ jam}</span>. Ditambah berhenti <span class=\"math-inline\">25\\text{ menit}</span> menjadi <span class=\"math-inline\">3\\text{ jam } 25\\text{ menit}</span>. Tiba = <span class=\"math-inline\">05.30 + 3\\text{ jam } 25\\text{ menit} = 08.55</span>."
+        },
+        {
+          id: "W-13",
+          q: "Jarak sekolah ke rumah nenek <span class=\"math-inline\">2{,}4\\text{ km}</span>. Jika Andi bersepeda dengan kecepatan <span class=\"math-inline\">12\\text{ km/jam}</span>, berapa menit Andi tiba di rumah nenek?",
+          options: ["<span class=\"math-inline\">12\\text{ menit}</span>", "<span class=\"math-inline\">10\\text{ menit}</span>", "<span class=\"math-inline\">15\\text{ menit}</span>", "<span class=\"math-inline\">18\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{2{,}4}{12} = 0{,}2\\text{ jam} = 0{,}2 \\times 60 = 12\\text{ menit}</span>."
+        },
+        {
+          id: "W-14",
+          q: "Sebuah mobil melaju dengan kecepatan <span class=\"math-inline\">72\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">12\\text{ km}</span>. Berapa menit waktu yang dibutuhkan mobil?",
+          options: ["<span class=\"math-inline\">10\\text{ menit}</span>", "<span class=\"math-inline\">8\\text{ menit}</span>", "<span class=\"math-inline\">12\\text{ menit}</span>", "<span class=\"math-inline\">15\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{12}{72} = \\frac{1}{6}\\text{ jam} = 10\\text{ menit}</span>."
+        },
+        {
+          id: "W-15",
+          q: "Paman ingin tiba di stasiun tepat pukul <span class=\"math-inline\">09.00</span>. Jarak rumah ke stasiun <span class=\"math-inline\">24\\text{ km}</span> dan kecepatan motor Paman <span class=\"math-inline\">36\\text{ km/jam}</span>. Pukul berapa Paman harus berangkat?",
+          options: ["<span class=\"math-inline\">08.20</span>", "<span class=\"math-inline\">08.15</span>", "<span class=\"math-inline\">08.25</span>", "<span class=\"math-inline\">08.30</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{24}{36} = \\frac{2}{3}\\text{ jam} = 40\\text{ menit}</span>. Berangkat = <span class=\"math-inline\">09.00 - 40\\text{ menit} = 08.20</span>."
+        },
+        {
+          id: "W-16",
+          q: "Sebuah kereta melaju dengan kecepatan <span class=\"math-inline\">90\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">195\\text{ km}</span>. Waktu tempuh kereta adalah...",
+          options: ["<span class=\"math-inline\">2\\text{ jam } 10\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 05\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 15\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 20\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{195}{90} = \\frac{13}{6}\\text{ jam} = 2\\frac{1}{6}\\text{ jam} = 2\\text{ jam } 10\\text{ menit}</span>."
+        },
+        {
+          id: "W-17",
+          q: "Seorang perenang melaju dengan kecepatan <span class=\"math-inline\">1{,}5\\text{ m/detik}</span> menempuh jarak <span class=\"math-inline\">300\\text{ m}</span>. Berapa menit waktu yang dibutuhkan?",
+          options: ["<span class=\"math-inline\">3\\text{ menit } 20\\text{ detik}</span>", "<span class=\"math-inline\">3\\text{ menit}</span>", "<span class=\"math-inline\">3\\text{ menit } 30\\text{ detik}</span>", "<span class=\"math-inline\">4\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = 300 \\div 1{,}5 = 200\\text{ detik} = 3\\text{ menit } 20\\text{ detik}</span>."
+        },
+        {
+          id: "W-18",
+          q: "Bus antar kota menempuh jarak <span class=\"math-inline\">320\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">64\\text{ km/jam}</span>. Berapa jam waktu tempuh bus tersebut?",
+          options: ["<span class=\"math-inline\">5\\text{ jam}</span>", "<span class=\"math-inline\">4{,}5\\text{ jam}</span>", "<span class=\"math-inline\">5{,}5\\text{ jam}</span>", "<span class=\"math-inline\">6\\text{ jam}</span>"],
+          exp: "<span class=\"math-inline\">W = 320 \\div 64 = 5\\text{ jam}</span>."
+        },
+        {
+          id: "W-19",
+          q: "Dodi mengayuh sepeda sejauh <span class=\"math-inline\">4.500\\text{ m}</span> dengan kecepatan <span class=\"math-inline\">15\\text{ km/jam}</span>. Berapa menit waktu yang dibutuhkan Dodi?",
+          options: ["<span class=\"math-inline\">18\\text{ menit}</span>", "<span class=\"math-inline\">15\\text{ menit}</span>", "<span class=\"math-inline\">20\\text{ menit}</span>", "<span class=\"math-inline\">24\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">4.500\\text{ m} = 4{,}5\\text{ km}</span>. <span class=\"math-inline\">W = \\frac{4{,}5}{15} = \\frac{3}{10}\\text{ jam} = 18\\text{ menit}</span>."
+        },
+        {
+          id: "W-20",
+          q: "Mobil ekspedisi menempuh jarak <span class=\"math-inline\">255\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">60\\text{ km/jam}</span>. Lama perjalanan mobil ekspedisi adalah...",
+          options: ["<span class=\"math-inline\">4\\text{ jam } 15\\text{ menit}</span>", "<span class=\"math-inline\">4\\text{ jam } 10\\text{ menit}</span>", "<span class=\"math-inline\">4\\text{ jam } 20\\text{ menit}</span>", "<span class=\"math-inline\">4\\text{ jam } 30\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{255}{60} = \\frac{17}{4}\\text{ jam} = 4\\frac{1}{4}\\text{ jam} = 4\\text{ jam } 15\\text{ menit}</span>."
+        },
+        {
+          id: "W-21",
+          q: "Dua kota berjarak <span class=\"math-inline\">180\\text{ km}</span>. Mobil A berangkat dari Kota X pukul <span class=\"math-inline\">08.00</span> dengan kecepatan <span class=\"math-inline\">50\\text{ km/jam}</span>, dan Mobil B berangkat dari Kota Y pukul <span class=\"math-inline\">08.00</span> dengan kecepatan <span class=\"math-inline\">40\\text{ km/jam}</span> saling berpapasan. Pukul berapa mereka berpapasan?",
+          options: ["<span class=\"math-inline\">10.00</span>", "<span class=\"math-inline\">09.30</span>", "<span class=\"math-inline\">10.30</span>", "<span class=\"math-inline\">11.00</span>"],
+          exp: "Rumus berpapasan (berangkat bersamaan): <span class=\"math-inline\">W = \\frac{J}{K_A + K_B} = \\frac{180}{50 + 40} = \\frac{180}{90} = 2\\text{ jam}</span>. Bertemu pukul <span class=\"math-inline\">08.00 + 2\\text{ jam} = 10.00</span>."
+        },
+        {
+          id: "W-22",
+          q: "Jarak Kota M ke Kota N adalah <span class=\"math-inline\">275\\text{ km}</span>. Bus A (<span class=\"math-inline\">60\\text{ km/jam}</span>) dan Bus B (<span class=\"math-inline\">50\\text{ km/jam}</span>) berangkat pukul <span class=\"math-inline\">07.15</span> dari arah berlawanan. Pukul berapa keduanya berpapasan?",
+          options: ["<span class=\"math-inline\">09.45</span>", "<span class=\"math-inline\">09.30</span>", "<span class=\"math-inline\">10.00</span>", "<span class=\"math-inline\">10.15</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{275}{60 + 50} = \\frac{275}{110} = 2{,}5\\text{ jam} = 2\\text{ jam } 30\\text{ menit}</span>. Berpapasan pukul <span class=\"math-inline\">07.15 + 2\\text{ jam } 30\\text{ menit} = 09.45</span>."
+        },
+        {
+          id: "W-23",
+          q: "Andi bersepeda dengan kecepatan <span class=\"math-inline\">15\\text{ km/jam}</span> berangkat pukul <span class=\"math-inline\">07.00</span>. Pada pukul <span class=\"math-inline\">07.20</span>, Kakak menyusul dengan motor berkecepatan <span class=\"math-inline\">45\\text{ km/jam}</span>. Berapa menit Kakak berhasil menyusul Andi?",
+          options: ["<span class=\"math-inline\">10\\text{ menit}</span>", "<span class=\"math-inline\">15\\text{ menit}</span>", "<span class=\"math-inline\">20\\text{ menit}</span>", "<span class=\"math-inline\">30\\text{ menit}</span>"],
+          exp: "Selisih jarak awal Andi (<span class=\"math-inline\">20\\text{ menit} = \\frac{1}{3}\\text{ jam}</span>) = <span class=\"math-inline\">15 \\times \\frac{1}{3} = 5\\text{ km}</span>. Waktu menyusul = <span class=\"math-inline\">\\frac{\\text{Selisih Jarak}}{K_2 - K_1} = \\frac{5}{45 - 15} = \\frac{5}{30} = \\frac{1}{6}\\text{ jam} = 10\\text{ menit}</span>."
+        },
+        {
+          id: "W-24",
+          q: "Sebuah sepeda motor melaju dengan kecepatan <span class=\"math-inline\">48\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">36\\text{ km}</span>. Berapa menit waktu perjalanan motor itu?",
+          options: ["<span class=\"math-inline\">45\\text{ menit}</span>", "<span class=\"math-inline\">40\\text{ menit}</span>", "<span class=\"math-inline\">50\\text{ menit}</span>", "<span class=\"math-inline\">54\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{36}{48} = \\frac{3}{4}\\text{ jam} = 45\\text{ menit}</span>."
+        },
+        {
+          id: "W-25",
+          q: "Kereta api melaju <span class=\"math-inline\">80\\text{ km/jam}</span> menempuh jarak <span class=\"math-inline\">44\\text{ km}</span>. Berapa menit waktu tempuhnya?",
+          options: ["<span class=\"math-inline\">33\\text{ menit}</span>", "<span class=\"math-inline\">30\\text{ menit}</span>", "<span class=\"math-inline\">35\\text{ menit}</span>", "<span class=\"math-inline\">36\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{44}{80} = \\frac{11}{20}\\text{ jam} = \\frac{11}{20} \\times 60 = 33\\text{ menit}</span>."
+        },
+        {
+          id: "W-26",
+          q: "Ayah mengendarai mobil sejauh <span class=\"math-inline\">140\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">56\\text{ km/jam}</span>. Waktu tempuh Ayah adalah...",
+          options: ["<span class=\"math-inline\">2\\text{ jam } 30\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 15\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 20\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 45\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{140}{56} = \\frac{5}{2}\\text{ jam} = 2\\text{ jam } 30\\text{ menit}</span>."
+        },
+        {
+          id: "W-27",
+          q: "Sebuah taksi menempuh jarak <span class=\"math-inline\">21\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">60\\text{ km/jam}</span>. Berapa menit waktu perjalanan taksi tersebut?",
+          options: ["<span class=\"math-inline\">21\\text{ menit}</span>", "<span class=\"math-inline\">18\\text{ menit}</span>", "<span class=\"math-inline\">24\\text{ menit}</span>", "<span class=\"math-inline\">25\\text{ menit}</span>"],
+          exp: "Trik cepat: kecepatan <span class=\"math-inline\">60\\text{ km/jam}</span> berarti <span class=\"math-inline\">1\\text{ km}</span> ditempuh dalam <span class=\"math-inline\">1\\text{ menit}</span>! Jadi <span class=\"math-inline\">21\\text{ km}</span> ditempuh dalam <span class=\"math-inline\">21\\text{ menit}</span>."
+        },
+        {
+          id: "W-28",
+          q: "Helikopter terbang sejauh <span class=\"math-inline\">450\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">200\\text{ km/jam}</span>. Berapa lama waktu penerbangan helikopter?",
+          options: ["<span class=\"math-inline\">2\\text{ jam } 15\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 10\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 25\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam } 30\\text{ menit}</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{450}{200} = \\frac{9}{4}\\text{ jam} = 2\\frac{1}{4}\\text{ jam} = 2\\text{ jam } 15\\text{ menit}</span>."
+        },
+        {
+          id: "W-29",
+          q: "Ibu berangkat ke pasar pukul <span class=\"math-inline\">06.10</span> berjalan kaki sejauh <span class=\"math-inline\">1{,}2\\text{ km}</span> dengan kecepatan <span class=\"math-inline\">4\\text{ km/jam}</span>. Pukul berapa Ibu tiba di pasar?",
+          options: ["<span class=\"math-inline\">06.28</span>", "<span class=\"math-inline\">06.25</span>", "<span class=\"math-inline\">06.30</span>", "<span class=\"math-inline\">06.32</span>"],
+          exp: "<span class=\"math-inline\">W = \\frac{1{,}2}{4} = 0{,}3\\text{ jam} = 0{,}3 \\times 60 = 18\\text{ menit}</span>. Tiba pukul <span class=\"math-inline\">06.10 + 18\\text{ menit} = 06.28</span>."
+        },
+        {
+          id: "W-30",
+          q: "Sebuah mobil melaju <span class=\"math-inline\">50\\text{ km/jam}</span> selama <span class=\"math-inline\">1\\text{ jam}</span> pertama, lalu <span class=\"math-inline\">60\\text{ km/jam}</span> untuk sisa jarak sejauh <span class=\"math-inline\">90\\text{ km}</span>. Total waktu seluruh perjalanan adalah...",
+          options: ["<span class=\"math-inline\">2\\text{ jam } 30\\text{ menit}</span>", "<span class=\"math-inline\">2\\text{ jam}</span>", "<span class=\"math-inline\">2\\text{ jam } 15\\text{ menit}</span>", "<span class=\"math-inline\">3\\text{ jam}</span>"],
+          exp: "Tahap 1 = <span class=\"math-inline\">1\\text{ jam}</span>. Tahap 2 = <span class=\"math-inline\">90 \\div 60 = 1{,}5\\text{ jam}</span>. Total = <span class=\"math-inline\">1 + 1{,}5 = 2{,}5\\text{ jam} = 2\\text{ jam } 30\\text{ menit}</span>."
+        }
+      ]
+    };
+
+    /**
+     * Kunci penyimpanan lokal untuk mempertahankan seluruh progres saat offline atau reload.
+     */
+    const STORAGE_KEY = "kuis_jkw_kelas6_v1";
+
+    /**
+     * State aplikasi kuis
+     */
+    let quizState = {
+      activeSub: "jarak", // 'jarak' | 'kecepatan' | 'waktu'
+      currentIndex: {
+        jarak: 0,
+        kecepatan: 0,
+        waktu: 0
+      },
+      navVisible: true,
+      // Menyimpan urutan indeks opsi teracak untuk setiap soal ID (mis. "J-01": [2, 0, 3, 1])
+      optionOrders: {},
+      // Menyimpan pilihan indeks opsi yang dipilih siswa untuk setiap soal ID (mis. "J-01": 1)
+      userAnswers: {}
+    };
+
+    const SUB_META = {
+      jarak: { label: "Jarak", badgeClass: "bg-indigo-600", pillClass: "bg-indigo-50 text-indigo-800 border-indigo-200" },
+      kecepatan: { label: "Kecepatan", badgeClass: "bg-teal-600", pillClass: "bg-teal-50 text-teal-800 border-teal-200" },
+      waktu: { label: "Waktu", badgeClass: "bg-amber-600", pillClass: "bg-amber-50 text-amber-900 border-amber-200" }
+    };
+
+    const LETTERS = ["A", "B", "C", "D"];
+
+    /**
+     * Membuat urutan opsi acak yang seimbang di seluruh 30 soal tiap sub-materi
+     * (masing-masing huruf A, B, C, D mendapat jatah kunci benar 7–8 kali dan tidak berpola A-B-C-D).
+     */
+    function generateBalancedOptionOrders() {
+      const orders = {};
+      Object.keys(RAW_QUESTION_BANK).forEach(subKey => {
+        const questions = RAW_QUESTION_BANK[subKey];
+        // Buat daftar target posisi kunci jawaban yang seimbang (7, 8, 8, 7 untuk 30 soal)
+        const targetSlots = [];
+        for (let i = 0; i < questions.length; i++) {
+          targetSlots.push(i % 4);
+        }
+        // Acak targetSlots menggunakan Fisher-Yates dengan penghindaran pola berurutan
+        for (let i = targetSlots.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [targetSlots[i], targetSlots[j]] = [targetSlots[j], targetSlots[i]];
+        }
+        // Pecah jika kebetulan muncul pola monotonik 0,1,2,3 berturut-turut
+        for (let i = 3; i < targetSlots.length; i++) {
+          if (
+            targetSlots[i - 3] === 0 &&
+            targetSlots[i - 2] === 1 &&
+            targetSlots[i - 1] === 2 &&
+            targetSlots[i] === 3
+          ) {
+            [targetSlots[i], targetSlots[i - 1]] = [targetSlots[i - 1], targetSlots[i]];
+          }
+        }
+
+        questions.forEach((item, idx) => {
+          const correctPos = targetSlots[idx];
+          const distractors = [1, 2, 3];
+          // Acak posisi pengecoh
+          for (let d = distractors.length - 1; d > 0; d--) {
+            const r = Math.floor(Math.random() * (d + 1));
+            [distractors[d], distractors[r]] = [distractors[r], distractors[d]];
+          }
+          const slotMap = new Array(4);
+          slotMap[correctPos] = 0; // indeks 0 pada data asli adalah jawaban benar
+          let dPtr = 0;
+          for (let s = 0; s < 4; s++) {
+            if (s !== correctPos) {
+              slotMap[s] = distractors[dPtr++];
+            }
+          }
+          orders[item.id] = slotMap;
+        });
+      });
+      return orders;
+    }
+
+    /**
+     * Memuat state tersimpan dari localStorage agar aman saat jaringan putus / reload.
+     */
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") {
+            quizState = {
+              ...quizState,
+              ...parsed,
+              currentIndex: {
+                jarak: parsed.currentIndex?.jarak ?? 0,
+                kecepatan: parsed.currentIndex?.kecepatan ?? 0,
+                waktu: parsed.currentIndex?.waktu ?? 0
+              },
+              optionOrders: parsed.optionOrders && Object.keys(parsed.optionOrders).length > 0
+                ? parsed.optionOrders
+                : generateBalancedOptionOrders(),
+              userAnswers: parsed.userAnswers || {}
+            };
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Tidak dapat membaca penyimpanan lokal:", err);
+      }
+      quizState.optionOrders = generateBalancedOptionOrders();
+      saveState();
+    }
+
+    /**
+     * Menyimpan state kuis secara otomatis setiap ada perubahan.
+     */
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(quizState));
+        const badge = document.getElementById("save-badge");
+        if (badge) {
+          badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Tersimpan Otomatis`;
+        }
+      } catch (err) {
+        console.warn("Gagal menyimpan progres:", err);
+      }
+    }
+
+    /**
+     * Merender seluruh ekspresi matematika dengan KaTeX.
+     */
+    function renderAllMath(rootEl = document.body) {
+      if (typeof renderMathInElement === "function") {
+        renderMathInElement(rootEl, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\[", right: "\\]", display: true },
+            { left: "\\(", right: "\\)", display: false }
+          ],
+          throwOnError: false
+        });
+      }
+      const nodes = rootEl.querySelectorAll(".math-inline");
+      nodes.forEach(node => {
+        if (node.dataset.katexRendered === "true") return;
+        const tex = node.textContent.trim();
+        if (typeof katex !== "undefined" && tex) {
+          try {
+            katex.render(tex, node, { throwOnError: false });
+            node.dataset.katexRendered = "true";
+          } catch (e) {
+            console.warn("KaTeX error:", tex, e);
+          }
+        }
+      });
+    }
+
+    function initMathPolling() {
+      renderAllMath(document.body);
+      if (typeof katex === "undefined") {
+        let count = 0;
+        const timer = setInterval(() => {
+          count++;
+          if (typeof katex !== "undefined") {
+            document.querySelectorAll(".math-inline").forEach(n => { n.dataset.katexRendered = "false"; });
+            renderAllMath(document.body);
+            clearInterval(timer);
+          } else if (count > 30) {
+            clearInterval(timer);
+          }
+        }, 120);
+      }
+    }
+
+    /**
+     * Toast notifikasi halus tanpa alert()
+     */
+    function showToast(msg, icon = "✨") {
+      const box = document.getElementById("toast-box");
+      const msgEl = document.getElementById("toast-message");
+      const iconEl = document.getElementById("toast-icon");
+      if (!box || !msgEl || !iconEl) return;
+
+      msgEl.textContent = msg;
+      iconEl.textContent = icon;
+      box.classList.remove("hidden");
+
+      clearTimeout(window.__quizToastTimer);
+      window.__quizToastTimer = setTimeout(() => {
+        box.classList.add("hidden");
+      }, 2400);
+    }
+
+    /**
+     * Mengecek apakah jawaban user pada suatu soal benar atau salah.
+     */
+    function evaluateQuestion(item) {
+      const selectedDisplayIdx = quizState.userAnswers[item.id];
+      if (selectedDisplayIdx === undefined || selectedDisplayIdx === null) {
+        return { answered: false, isCorrect: false, correctDisplayIdx: getCorrectDisplayIndex(item.id) };
+      }
+      const order = quizState.optionOrders[item.id] || [0, 1, 2, 3];
+      const originalOptionIdx = order[selectedDisplayIdx];
+      return {
+        answered: true,
+        isCorrect: originalOptionIdx === 0,
+        selectedDisplayIdx,
+        correctDisplayIdx: order.indexOf(0)
+      };
+    }
+
+    function getCorrectDisplayIndex(itemId) {
+      const order = quizState.optionOrders[itemId] || [0, 1, 2, 3];
+      return order.indexOf(0);
+    }
+
+    /**
+     * Mengganti tab sub-materi ('jarak' | 'kecepatan' | 'waktu')
+     */
+    function switchSubMaterial(subKey) {
+      if (!RAW_QUESTION_BANK[subKey]) return;
+      quizState.activeSub = subKey;
+      saveState();
+      renderAll();
+    }
+
+    /**
+     * Hide / Show Panel Navigasi Soal
+     */
+    function toggleNavDrawer() {
+      quizState.navVisible = !quizState.navVisible;
+      saveState();
+      applyNavVisibility();
+    }
+
+    function applyNavVisibility() {
+      const sidebar = document.getElementById("nav-sidebar");
+      const qCol = document.getElementById("question-column");
+      const toggleBtn = document.getElementById("toggle-nav-btn");
+      const toggleLabel = document.getElementById("toggle-nav-label");
+      const toggleIcon = document.getElementById("toggle-nav-icon");
+
+      if (!sidebar || !qCol) return;
+
+      if (quizState.navVisible) {
+        sidebar.classList.remove("hidden");
+        qCol.classList.remove("lg:col-span-12");
+        qCol.classList.add("lg:col-span-8");
+        if (toggleLabel) toggleLabel.textContent = "Sembunyikan Navigasi";
+        if (toggleIcon) toggleIcon.textContent = "🧭";
+        if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "true");
+      } else {
+        sidebar.classList.add("hidden");
+        qCol.classList.remove("lg:col-span-8");
+        qCol.classList.add("lg:col-span-12");
+        if (toggleLabel) toggleLabel.textContent = "Tampilkan Navigasi";
+        if (toggleIcon) toggleIcon.textContent = "☰";
+        if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
+      }
+    }
+
+    /**
+     * Memilih nomor soal tertentu pada sub-materi aktif.
+     */
+    function selectQuestionIndex(idx) {
+      const sub = quizState.activeSub;
+      const total = RAW_QUESTION_BANK[sub].length;
+      if (idx < 0 || idx >= total) return;
+      quizState.currentIndex[sub] = idx;
+      saveState();
+      renderQuestionCard();
+      renderNavigationGrid();
+    }
+
+    function goPrevQuestion() {
+      const sub = quizState.activeSub;
+      const cur = quizState.currentIndex[sub];
+      if (cur > 0) selectQuestionIndex(cur - 1);
+    }
+
+    function goNextQuestion() {
+      const sub = quizState.activeSub;
+      const cur = quizState.currentIndex[sub];
+      const total = RAW_QUESTION_BANK[sub].length;
+      if (cur < total - 1) selectQuestionIndex(cur + 1);
+    }
+
+    function jumpToNextUnanswered() {
+      const sub = quizState.activeSub;
+      const list = RAW_QUESTION_BANK[sub];
+      const cur = quizState.currentIndex[sub];
+
+      for (let offset = 1; offset <= list.length; offset++) {
+        const candidateIdx = (cur + offset) % list.length;
+        const item = list[candidateIdx];
+        if (quizState.userAnswers[item.id] === undefined) {
+          selectQuestionIndex(candidateIdx);
+          return;
+        }
+      }
+      showToast(`Semua 30 soal pada sub-materi ${SUB_META[sub].label} sudah terjawab!`, "🎉");
+    }
+
+    /**
+     * Menangani klik jawaban siswa dan langsung menampilkan benar/salah + pembahasan.
+     */
+    function handleSelectOption(displayIdx) {
+      const sub = quizState.activeSub;
+      const curIdx = quizState.currentIndex[sub];
+      const item = RAW_QUESTION_BANK[sub][curIdx];
+      if (!item) return;
+
+      quizState.userAnswers[item.id] = displayIdx;
+      saveState();
+
+      renderQuestionCard();
+      renderNavigationGrid();
+      updateAllStats();
+    }
+
+    /**
+     * Merender tampilan tab sub-materi
+     */
+    function renderSubTabs() {
+      const subKeys = ["jarak", "kecepatan", "waktu"];
+      subKeys.forEach(key => {
+        const tabBtn = document.getElementById(`subtab-${key}`);
+        const badgeEl = document.getElementById(`badge-${key}`);
+        const list = RAW_QUESTION_BANK[key];
+        const answeredCount = list.filter(item => quizState.userAnswers[item.id] !== undefined).length;
+
+        if (badgeEl) {
+          badgeEl.textContent = `${answeredCount}/${list.length}`;
+        }
+
+        if (tabBtn) {
+          if (quizState.activeSub === key) {
+            tabBtn.className = `sub-tab shrink-0 rounded-xl ${SUB_META[key].badgeClass} px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition flex items-center gap-2`;
+            if (badgeEl) badgeEl.className = "rounded-full bg-white/25 px-2 py-0.5 text-[11px] text-white";
+          } else {
+            tabBtn.className = "sub-tab shrink-0 rounded-xl bg-white px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 border border-slate-200 hover:bg-slate-100 transition flex items-center gap-2";
+            if (badgeEl) badgeEl.className = "rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600";
+          }
+        }
+      });
+    }
+
+    /**
+     * Merender kartu soal aktif beserta pilihan jawaban & umpan balik instan.
+     */
+    function renderQuestionCard() {
+      const sub = quizState.activeSub;
+      const list = RAW_QUESTION_BANK[sub];
+      const curIdx = quizState.currentIndex[sub];
+      const item = list[curIdx];
+      if (!item) return;
+
+      const meta = SUB_META[sub];
+      const evalRes = evaluateQuestion(item);
+      const order = quizState.optionOrders[item.id] || [0, 1, 2, 3];
+
+      // Header kartu
+      const numBadge = document.getElementById("q-number-badge");
+      const topicPill = document.getElementById("q-topic-pill");
+      const statusPill = document.getElementById("q-status-pill");
+      const qText = document.getElementById("q-text");
+
+      if (numBadge) {
+        numBadge.className = `rounded-xl ${meta.badgeClass} px-3 py-1 text-xs font-extrabold text-white`;
+        numBadge.textContent = `Soal ${curIdx + 1} dari ${list.length}`;
+      }
+      if (topicPill) {
+        topicPill.className = `rounded-lg px-2.5 py-1 text-xs font-bold border ${meta.pillClass}`;
+        topicPill.textContent = `Sub-Materi: ${meta.label}`;
+      }
+      if (statusPill) {
+        if (!evalRes.answered) {
+          statusPill.className = "rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600";
+          statusPill.textContent = "Belum dijawab";
+        } else if (evalRes.isCorrect) {
+          statusPill.className = "rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800";
+          statusPill.textContent = "Jawaban Benar ✓";
+        } else {
+          statusPill.className = "rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800";
+          statusPill.textContent = "Jawaban Salah ✕";
+        }
+      }
+
+      if (qText) {
+        qText.innerHTML = item.q;
+      }
+
+      // Render opsi A, B, C, D
+      const optContainer = document.getElementById("options-container");
+      if (optContainer) {
+        optContainer.innerHTML = order.map((origIdx, dispIdx) => {
+          const optionHtml = item.options[origIdx];
+          const letter = LETTERS[dispIdx];
+
+          let cardStyle = "border-slate-200 bg-white hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800";
+          let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
+          let rightIcon = "";
+
+          if (evalRes.answered) {
+            if (dispIdx === evalRes.correctDisplayIdx) {
+              cardStyle = "border-emerald-500 bg-emerald-50/80 text-emerald-950 ring-1 ring-emerald-500/30";
+              badgeStyle = "bg-emerald-600 text-white border-emerald-600";
+              rightIcon = `<span class="ml-auto shrink-0 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-bold text-white">Benar ✓</span>`;
+            } else if (dispIdx === evalRes.selectedDisplayIdx && !evalRes.isCorrect) {
+              cardStyle = "border-rose-500 bg-rose-50/80 text-rose-950 ring-1 ring-rose-500/30";
+              badgeStyle = "bg-rose-600 text-white border-rose-600";
+              rightIcon = `<span class="ml-auto shrink-0 rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] font-bold text-white">Pilihanmu ✕</span>`;
+            } else {
+              cardStyle = "border-slate-200 bg-slate-50/60 text-slate-500 opacity-85";
+            }
+          }
+
+          return `
+            <button
+              type="button"
+              onclick="handleSelectOption(${dispIdx})"
+              class="w-full text-left rounded-2xl border p-3.5 sm:p-4 transition flex items-center gap-3.5 cursor-pointer ${cardStyle}"
+            >
+              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border text-xs font-extrabold ${badgeStyle}">
+                ${letter}
+              </span>
+              <span class="text-sm sm:text-base font-semibold leading-snug">${optionHtml}</span>
+              ${rightIcon}
+            </button>
+          `;
+        }).join("");
+      }
+
+      // Panel Umpan Balik Langsung (Benar/Salah + Pembahasan)
+      const fbBox = document.getElementById("instant-feedback");
+      const fbIcon = document.getElementById("fb-icon");
+      const fbTitle = document.getElementById("fb-title");
+      const fbExp = document.getElementById("fb-explanation");
+
+      if (fbBox && fbIcon && fbTitle && fbExp) {
+        if (!evalRes.answered) {
+          fbBox.classList.add("hidden");
+        } else {
+          fbBox.classList.remove("hidden");
+          const correctLetter = LETTERS[evalRes.correctDisplayIdx];
+          if (evalRes.isCorrect) {
+            fbBox.className = "rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 sm:p-5 space-y-2 text-emerald-950 animate-pop";
+            fbIcon.textContent = "✅";
+            fbTitle.textContent = `Tepat Sekali! Jawaban Benar adalah ${correctLetter}.`;
+          } else {
+            fbBox.className = "rounded-2xl border border-rose-200 bg-rose-50/90 p-4 sm:p-5 space-y-2 text-rose-950 animate-pop";
+            fbIcon.textContent = "❌";
+            fbTitle.textContent = `Kurang Tepat! Kunci Jawaban yang Benar adalah ${correctLetter}.`;
+          }
+          fbExp.innerHTML = `<strong>Pembahasan &amp; Trik Cepat:</strong> ${item.exp}`;
+        }
+      }
+
+      // Status tombol Prev/Next
+      const btnPrev = document.getElementById("btn-prev");
+      const btnNext = document.getElementById("btn-next");
+      if (btnPrev) btnPrev.disabled = curIdx === 0;
+      if (btnNext) btnNext.disabled = curIdx === list.length - 1;
+
+      const card = document.getElementById("question-card");
+      if (card) renderAllMath(card);
+    }
+
+    /**
+     * Merender grid tombol nomor soal 1–30 di panel navigasi samping
+     */
+    function renderNavigationGrid() {
+      const sub = quizState.activeSub;
+      const list = RAW_QUESTION_BANK[sub];
+      const curIdx = quizState.currentIndex[sub];
+      const navSubtitle = document.getElementById("nav-subtitle");
+      const navGrid = document.getElementById("nav-grid");
+
+      if (navSubtitle) {
+        navSubtitle.textContent = `Sub-Materi ${SUB_META[sub].label} (1–${list.length})`;
+      }
+
+      if (navGrid) {
+        navGrid.innerHTML = list.map((item, idx) => {
+          const evalRes = evaluateQuestion(item);
+          const isCurrent = idx === curIdx;
+
+          let btnClass = "bg-white text-slate-700 border-slate-200 hover:border-indigo-400";
+          if (evalRes.answered) {
+            if (evalRes.isCorrect) {
+              btnClass = "bg-emerald-500 text-white border-emerald-600 font-extrabold";
+            } else {
+              btnClass = "bg-rose-500 text-white border-rose-600 font-extrabold";
+            }
+          }
+
+          if (isCurrent) {
+            btnClass += " ring-2 ring-indigo-600 ring-offset-1 scale-[1.03]";
+          }
+
+          return `
+            <button
+              type="button"
+              onclick="selectQuestionIndex(${idx})"
+              class="h-10 rounded-xl border text-xs font-bold transition flex items-center justify-center ${btnClass}"
+              title="Soal ${idx + 1}"
+            >
+              ${idx + 1}
+            </button>
+          `;
+        }).join("");
+      }
+    }
+
+    /**
+     * Memperbarui semua penghitung skor, persentase, dan bilah progres
+     */
+    function updateAllStats() {
+      let totalAnswered = 0;
+      let totalCorrect = 0;
+      const subKeys = ["jarak", "kecepatan", "waktu"];
+
+      subKeys.forEach(key => {
+        const list = RAW_QUESTION_BANK[key];
+        let subAnswered = 0;
+        let subCorrect = 0;
+
+        list.forEach(item => {
+          const res = evaluateQuestion(item);
+          if (res.answered) {
+            subAnswered++;
+            if (res.isCorrect) subCorrect++;
+          }
+        });
+
+        totalAnswered += subAnswered;
+        totalCorrect += subCorrect;
+
+        const subWrong = subAnswered - subCorrect;
+        const subEmpty = list.length - subAnswered;
+        const pct = Math.round((subCorrect / list.length) * 100);
+
+        const pctEl = document.getElementById(`stat-${key}-pct`);
+        const detEl = document.getElementById(`stat-${key}-detail`);
+        const barEl = document.getElementById(`bar-${key}`);
+
+        if (pctEl) pctEl.textContent = `${pct}%`;
+        if (detEl) detEl.textContent = `${subCorrect} benar • ${subWrong} salah • ${subEmpty} kosong`;
+        if (barEl) barEl.style.width = `${pct}%`;
+
+        if (key === quizState.activeSub) {
+          const subScoreText = document.getElementById("sub-score-text");
+          if (subScoreText) {
+            subScoreText.textContent = `${subCorrect} Benar / ${subAnswered} Terjawab`;
+          }
+        }
+      });
+
+      const headerAnswered = document.getElementById("header-answered");
+      const headerCorrect = document.getElementById("header-correct");
+      const mobileScore = document.getElementById("mobile-score");
+
+      if (headerAnswered) headerAnswered.textContent = `${totalAnswered}/90`;
+      if (headerCorrect) headerCorrect.textContent = `${totalCorrect}`;
+      if (mobileScore) mobileScore.textContent = `${totalCorrect}✓ (${totalAnswered}/90)`;
+    }
+
+    /**
+     * Modal & aksi reset kuis
+     */
+    function openResetModal() {
+      const modal = document.getElementById("reset-modal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+    }
+
+    function closeResetModal() {
+      const modal = document.getElementById("reset-modal");
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    }
+
+    function confirmResetQuiz() {
+      quizState.userAnswers = {};
+      quizState.currentIndex = { jarak: 0, kecepatan: 0, waktu: 0 };
+      quizState.optionOrders = generateBalancedOptionOrders();
+      saveState();
+      closeResetModal();
+      renderAll();
+      showToast("Kuis berhasil di-reset & opsi jawaban telah diacak ulang!", "↻");
+    }
+
+    /**
+     * Render seluruh komponen antarmuka
+     */
+    function renderAll() {
+      renderSubTabs();
+      applyNavVisibility();
+      renderQuestionCard();
+      renderNavigationGrid();
+      updateAllStats();
+    }
+
+    // Pantau status jaringan untuk memberi informasi kepada siswa
+    window.addEventListener("offline", () => {
+      const badge = document.getElementById("save-badge");
+      if (badge) {
+        badge.className = "inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 border border-amber-200";
+        badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Offline • Progres Aman`;
+      }
+      showToast("Koneksi terputus, tapi kuis tetap berjalan & tersimpan otomatis!", "📡");
+    });
+
+    window.addEventListener("online", () => {
+      const badge = document.getElementById("save-badge");
+      if (badge) {
+        badge.className = "inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200";
+        badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Tersimpan Otomatis`;
+      }
+      showToast("Koneksi kembali terhubung!", "🟢");
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSavedState();
+      renderAll();
+      initMathPolling();
+    });
+
+    window.addEventListener("load", () => {
+      initMathPolling();
+    });
+  </script>
+</body>
+</html>
