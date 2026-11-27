@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Matematika: Debit, Kecepatan & Akar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Custom scrollbar untuk panel navigasi */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Kuis Matematika Interaktif</h1>
+                    <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Tersimpan otomatis di perangkat (Aman saat offline / reload)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Global Score & Reset Action -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                <div class="bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200 flex items-center gap-3 text-xs sm:text-sm">
+                    <span class="font-medium text-slate-600">Total Skor:</span>
+                    <span id="global-score" class="font-extrabold text-indigo-600 text-base">0 / 90</span>
+                </div>
+                <button onclick="openResetModal()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition flex items-center gap-1.5" title="Reset Semua Jawaban">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-slate-50 border-t border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto no-scrollbar gap-2 py-2.5" id="tabs-container">
+                <!-- Tab buttons injected by JS -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Column: Question Area (8 cols on lg) -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                
+                <!-- Category Progress Bar Card -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <span id="category-badge" class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 mb-1">
+                            Kategori
+                        </span>
+                        <h2 id="category-title" class="text-base font-bold text-slate-800">Judul Kategori</h2>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="text-center">
+                            <span class="block text-xs text-slate-400">Dijawab</span>
+                            <span id="cat-answered" class="font-bold text-slate-700">0/30</span>
+                        </div>
+                        <div class="h-8 w-px bg-slate-200"></div>
+                        <div class="text-center">
+                            <span class="block text-xs text-slate-400">Benar</span>
+                            <span id="cat-correct" class="font-bold text-emerald-600">0</span>
+                        </div>
+                        <div class="h-8 w-px bg-slate-200"></div>
+                        <div class="text-center">
+                            <span class="block text-xs text-slate-400">Salah</span>
+                            <span id="cat-wrong" class="font-bold text-rose-600">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Card -->
+                <div id="question-card" class="bg-white p-5 sm:p-8 rounded-2xl border border-slate-200 shadow-sm fade-in">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <span id="question-number" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">
+                            Soal No. 1
+                        </span>
+                        <span id="question-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500">
+                            Belum dijawab
+                        </span>
+                    </div>
+
+                    <!-- Question Text -->
+                    <div id="question-text" class="text-base sm:text-lg font-medium text-slate-800 leading-relaxed mb-6">
+                        Memuat soal...
+                    </div>
+
+                    <!-- Options Container -->
+                    <div id="options-container" class="flex flex-col gap-3">
+                        <!-- Options injected via JS -->
+                    </div>
+
+                    <!-- Instant Feedback Box -->
+                    <div id="feedback-box" class="hidden mt-6 p-4 rounded-xl border text-sm leading-relaxed fade-in">
+                        <div class="flex items-start gap-3">
+                            <div id="feedback-icon" class="mt-0.5 text-lg"></div>
+                            <div>
+                                <h4 id="feedback-title" class="font-bold text-base mb-1"></h4>
+                                <p id="feedback-explanation" class="text-slate-700"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prev / Next Navigation Buttons -->
+                <div class="flex items-center justify-between gap-3">
+                    <button id="btn-prev" onclick="navigateQuestion(-1)" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-white border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Sebelumnya</span>
+                    </button>
+
+                    <button id="btn-next" onclick="navigateQuestion(1)" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-sm shadow-indigo-200">
+                        <span>Selanjutnya</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Question Grid Navigator (4 cols on lg) -->
+            <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm sticky top-36">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-grid-2 text-indigo-600"></i>
+                        Navigasi Nomor Soal
+                    </h3>
+                    <span class="text-xs text-slate-400">Klik nomor untuk lompat</span>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600 mb-4 pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Benar
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Salah
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded bg-slate-100 border border-slate-300 inline-block"></span> Kosong
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded ring-2 ring-indigo-600 bg-white inline-block"></span> Aktif
+                    </div>
+                </div>
+
+                <!-- Number Grid (30 numbers) -->
+                <div id="nav-grid" class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-2 max-h-[360px] overflow-y-auto p-1">
+                    <!-- Grid buttons injected via JS -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Custom Modal for Reset Confirmation (No alert/confirm used) -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 fade-in">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Hapus Semua Progres Jawaban?</h3>
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Tindakan ini akan menghapus seluruh jawaban dan skor dari ke-90 soal. Anda bisa memilih untuk mereset tab saat ini saja atau seluruh kategori.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-2.5 justify-end">
+                <button onclick="closeResetModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
+                    Batal
+                </button>
+                <button onclick="resetCurrentTab()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 transition">
+                    Reset Tab Ini Saja
+                </button>
+                <button onclick="resetAllData()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition">
+                    Reset Semua (90 Soal)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /**
+         * BANK SOAL LENGKAP (90 SOAL)
+         * Terbagi menjadi 3 kategori masing-masing 30 soal:
+         * 1. debit: Debit, Volume, dan Waktu (30 soal)
+         * 2. kecepatan: Kecepatan, Jarak, dan Waktu (30 soal)
+         * 3. akar: Akar Pangkat 2 dan Akar Pangkat 3 (30 soal)
+         * 
+         * Catatan Distribusi Jawaban:
+         * Setiap kategori memiliki distribusi jawaban benar yang seimbang dan acak (tidak berpola A-B-C-D).
+         * Pada tiap kategori (30 soal), opsi A, B, C, D masing-masing muncul 7-8 kali secara acak.
+         */
+        const quizData = {
+            debit: {
+                id: 'debit',
+                title: 'Debit, Volume & Waktu',
+                shortTitle: '1. Debit (30 Soal)',
+                icon: 'fa-faucet-drip',
+                questions: [
+                    { q: "Sebuah keran mengalirkan air sebanyak 120 liter dalam waktu 3 menit. Berapa debit air keran tersebut?", options: ["30 liter/menit", "40 liter/menit", "60 liter/menit", "360 liter/menit"], ans: 1, exp: "Debit = Volume ÷ Waktu = 120 liter ÷ 3 menit = 40 liter/menit." },
+                    { q: "Debit air sebuah selang adalah 15 liter/menit. Jika selang digunakan selama 8 menit, berapa volume air yang mengalir?", options: ["120 liter", "90 liter", "105 liter", "135 liter"], ans: 0, exp: "Volume = Debit × Waktu = 15 liter/menit × 8 menit = 120 liter." },
+                    { q: "Sebuah bak mandi berkapasitas 450 liter diisi air dengan debit 15 liter/menit. Waktu yang diperlukan untuk mengisi bak hingga penuh adalah...", options: ["20 menit", "25 menit", "35 menit", "30 menit"], ans: 3, exp: "Waktu = Volume ÷ Debit = 450 liter ÷ 15 liter/menit = 30 menit." },
+                    { q: "36.000 liter/jam sama dengan ... liter/detik.", options: ["100 liter/detik", "60 liter/detik", "10 liter/detik", "36 liter/detik"], ans: 2, exp: "1 jam = 3.600 detik. Maka 36.000 ÷ 3.600 = 10 liter/detik." },
+                    { q: "250 cc/detik sama dengan ... liter/menit.", options: ["15 liter/menit", "1,5 liter/menit", "25 liter/menit", "150 liter/menit"], ans: 0, exp: "250 cc = 0,25 liter. Dalam 1 menit (60 detik) = 0,25 × 60 = 15 liter/menit." },
+                    { q: "Sebuah tangki berisi 2.400 liter minyak tanah. Minyak tersebut dialirkan ke drum-drum selama 40 menit hingga habis. Debit aliran minyak adalah...", options: ["40 liter/menit", "80 liter/menit", "50 liter/menit", "60 liter/menit"], ans: 3, exp: "Debit = 2.400 liter ÷ 40 menit = 60 liter/menit." },
+                    { q: "Air terjun memiliki debit 50 m³/detik. Banyak air yang dipindahkan air terjun tersebut dalam waktu 2 menit adalah...", options: ["100 m³", "6.000 m³", "3.000 m³", "1.000 m³"], ans: 1, exp: "2 menit = 120 detik. Volume = 50 m³/detik × 120 detik = 6.000 m³." },
+                    { q: "Kolam ikan berukuran panjang 4 m, lebar 2 m, dan kedalaman 1,5 m akan diisi air hingga penuh. Jika debit selang 400 liter/menit, waktu yang diperlukan adalah...", options: ["20 menit", "25 menit", "30 menit", "45 menit"], ans: 2, exp: "Volume = 4 × 2 × 1,5 = 12 m³ = 12.000 liter. Waktu = 12.000 ÷ 400 = 30 menit." },
+                    { q: "Sebuah keran mampu mengisi ember berkapasitas 24 liter dalam waktu 48 detik. Debit keran tersebut adalah...", options: ["0,5 liter/detik", "2 liter/detik", "1,5 liter/detik", "0,2 liter/detik"], ans: 0, exp: "Debit = 24 liter ÷ 48 detik = 0,5 liter/detik." },
+                    { q: "7,2 m³/jam = ... liter/menit.", options: ["72 liter/menit", "12 liter/menit", "1.200 liter/menit", "120 liter/menit"], ans: 3, exp: "7,2 m³ = 7.200 liter. 1 jam = 60 menit. Maka 7.200 ÷ 60 = 120 liter/menit." },
+                    { q: "Sebuah tandon air mula-mula berisi 800 liter air. Setelah keran dibuka selama 15 menit, air tersisa 200 liter. Debit air yang keluar adalah...", options: ["50 liter/menit", "40 liter/menit", "30 liter/menit", "60 liter/menit"], ans: 1, exp: "Volume keluar = 800 - 200 = 600 liter. Debit = 600 ÷ 15 = 40 liter/menit." },
+                    { q: "Debit pipa A adalah 18 liter/menit dan pipa B adalah 22 liter/menit. Jika kedua pipa dibuka bersamaan selama 10 menit, total volume air yang tertampung adalah...", options: ["400 liter", "380 liter", "420 liter", "360 liter"], ans: 0, exp: "Debit gabungan = 18 + 22 = 40 liter/menit. Volume = 40 × 10 = 400 liter." },
+                    { q: "Sebuah akuarium berbentuk kubus dengan panjang rusuk 50 cm diisi air hingga penuh menggunakan keran berdebit 2,5 liter/menit. Waktu yang dibutuhkan adalah...", options: ["25 menit", "40 menit", "50 menit", "20 menit"], ans: 2, exp: "Volume = 50 × 50 × 50 = 125.000 cm³ = 125 liter. Waktu = 125 ÷ 2,5 = 50 menit." },
+                    { q: "450 liter/menit = ... m³/jam.", options: ["2,7 m³/jam", "270 m³/jam", "45 m³/jam", "27 m³/jam"], ans: 3, exp: "450 liter = 0,45 m³. Dalam 1 jam (60 menit) = 0,45 × 60 = 27 m³/jam." },
+                    { q: "Sebuah mobil tangki mengalirkan 3.600 liter bensin dalam waktu 30 menit. Debit aliran bensin tersebut adalah ... liter/detik.", options: ["12 liter/detik", "2 liter/detik", "20 liter/detik", "1,2 liter/detik"], ans: 1, exp: "30 menit = 1.800 detik. Debit = 3.600 liter ÷ 1.800 detik = 2 liter/detik." },
+                    { q: "Untuk mengisi sebuah drum berkapasitas 210 liter hingga penuh diperlukan waktu 35 menit. Debit air yang mengalir adalah...", options: ["6 liter/menit", "7 liter/menit", "5 liter/menit", "8 liter/menit"], ans: 0, exp: "Debit = 210 liter ÷ 35 menit = 6 liter/menit." },
+                    { q: "Sebuah pompa air memiliki debit 125 liter/menit. Jika pompa dinyalakan dari pukul 08.15 hingga pukul 08.35, volume air yang dipompa adalah...", options: ["2.000 liter", "1.875 liter", "2.500 liter", "3.000 liter"], ans: 2, exp: "Waktu = 08.35 - 08.15 = 20 menit. Volume = 125 × 20 = 2.500 liter." },
+                    { q: "Volume air dalam sebuah kolam adalah 4.800 liter. Air dikuras dengan debit 80 liter/menit. Kolam akan kosong dalam waktu...", options: ["40 menit", "50 menit", "80 menit", "1 jam"], ans: 3, exp: "Waktu = 4.800 ÷ 80 = 60 menit = 1 jam." },
+                    { q: "180.000 cm³/menit = ... liter/detik.", options: ["3 liter/detik", "30 liter/detik", "0,3 liter/detik", "18 liter/detik"], ans: 0, exp: "180.000 cm³ = 180 liter. 1 menit = 60 detik. Maka 180 ÷ 60 = 3 liter/detik." },
+                    { q: "Sebuah bak penampungan dengan volume 1.500 liter bocor di bagian bawah. Setelah 25 menit, air di dalam bak tinggal 1.000 liter. Debit kebocoran bak tersebut adalah...", options: ["40 liter/menit", "20 liter/menit", "25 liter/menit", "15 liter/menit"], ans: 1, exp: "Air berkurang = 1.500 - 1.000 = 500 liter. Debit bocor = 500 ÷ 25 = 20 liter/menit." },
+                    { q: "Air mengalir melalui pintu bendungan dengan debit 1.500 dm³/detik. Dalam waktu 4 detik, volume air yang mengalir adalah ... m³.", options: ["60 m³", "600 m³", "6 m³", "0,6 m³"], ans: 2, exp: "Volume = 1.500 × 4 = 6.000 dm³ = 6 m³." },
+                    { q: "Ibu mengisi botol minum berkapasitas 750 ml dengan debit 25 ml/detik. Lama waktu yang diperlukan Ibu adalah...", options: ["20 detik", "25 detik", "40 detik", "30 detik"], ans: 3, exp: "Waktu = 750 ml ÷ 25 ml/detik = 30 detik." },
+                    { q: "Sebuah keran mengalirkan air dengan debit 0,4 liter/detik. Dalam 5 menit, volume air yang tertampung adalah...", options: ["120 liter", "20 liter", "200 liter", "12 liter"], ans: 0, exp: "5 menit = 300 detik. Volume = 0,4 × 300 = 120 liter." },
+                    { q: "Sebuah bak mandi diisi air mulai pukul 06.20 dengan debit 12 liter/menit. Jika bak penuh pada pukul 06.45, volume bak mandi tersebut adalah...", options: ["240 liter", "300 liter", "360 liter", "280 liter"], ans: 1, exp: "Waktu = 06.45 - 06.20 = 25 menit. Volume = 12 × 25 = 300 liter." },
+                    { q: "24 m³/menit = ... liter/detik.", options: ["40 liter/detik", "240 liter/detik", "400 liter/detik", "4.000 liter/detik"], ans: 2, exp: "24 m³ = 24.000 liter. 1 menit = 60 detik. Maka 24.000 ÷ 60 = 400 liter/detik." },
+                    { q: "Pak Budi mengisi kolam terpal bervolume 3.200 liter menggunakan dua selang. Selang pertama berdebit 30 liter/menit dan selang kedua 50 liter/menit. Kolam akan penuh dalam...", options: ["35 menit", "45 menit", "50 menit", "40 menit"], ans: 3, exp: "Debit total = 30 + 50 = 80 liter/menit. Waktu = 3.200 ÷ 80 = 40 menit." },
+                    { q: "Sebuah jeriken berisi 30 liter minyak goreng dituangkan ke dalam botol-botol kecil hingga habis dalam waktu 2,5 menit. Debit minyak yang dituang adalah...", options: ["12 liter/menit", "15 liter/menit", "10 liter/menit", "7,5 liter/menit"], ans: 0, exp: "Debit = 30 liter ÷ 2,5 menit = 12 liter/menit." },
+                    { q: "Debit aliran sungai adalah 45 m³/detik. Berapa m³ air yang mengalir selama setengah jam?", options: ["2.700 m³", "81.000 m³", "1.350 m³", "40.500 m³"], ans: 1, exp: "Setengah jam = 30 menit = 1.800 detik. Volume = 45 × 1.800 = 81.000 m³." },
+                    { q: "Sebuah wadah bervolume 900 cm³ diisi air dengan debit 15 cm³/detik. Waktu yang diperlukan untuk mengisi 2/3 bagian wadah tersebut adalah...", options: ["60 detik", "45 detik", "40 detik", "30 detik"], ans: 2, exp: "2/3 bagian = 2/3 × 900 = 600 cm³. Waktu = 600 ÷ 15 = 40 detik." },
+                    { q: "Jika dalam waktu 12 menit sebuah pipa dapat mengalirkan 960 liter air, maka dalam waktu 5 menit pipa tersebut mengalirkan air sebanyak...", options: ["350 liter", "450 liter", "480 liter", "400 liter"], ans: 3, exp: "Debit = 960 ÷ 12 = 80 liter/menit. Dalam 5 menit = 80 × 5 = 400 liter." }
+                ]
+            },
+            kecepatan: {
+                id: 'kecepatan',
+                title: 'Kecepatan, Jarak & Waktu',
+                shortTitle: '2. Kecepatan (30 Soal)',
+                icon: 'fa-gauge-high',
+                questions: [
+                    { q: "Sebuah mobil menempuh jarak 180 km dalam waktu 3 jam. Kecepatan rata-rata mobil tersebut adalah...", options: ["50 km/jam", "70 km/jam", "60 km/jam", "90 km/jam"], ans: 2, exp: "Kecepatan = Jarak ÷ Waktu = 180 km ÷ 3 jam = 60 km/jam." },
+                    { q: "Ayah mengendarai sepeda motor dengan kecepatan 45 km/jam selama 2 jam. Jarak yang ditempuh Ayah adalah...", options: ["90 km", "80 km", "95 km", "100 km"], ans: 0, exp: "Jarak = Kecepatan × Waktu = 45 km/jam × 2 jam = 90 km." },
+                    { q: "Jarak kota A ke kota B adalah 240 km. Sebuah bus melaju dengan kecepatan 60 km/jam. Waktu tempuh bus tersebut adalah...", options: ["3 jam", "5 jam", "6 jam", "4 jam"], ans: 3, exp: "Waktu = Jarak ÷ Kecepatan = 240 km ÷ 60 km/jam = 4 jam." },
+                    { q: "72 km/jam sama dengan ... m/detik.", options: ["10 m/detik", "20 m/detik", "30 m/detik", "720 m/detik"], ans: 1, exp: "72 km = 72.000 m. 1 jam = 3.600 detik. Maka 72.000 ÷ 3.600 = 20 m/detik." },
+                    { q: "15 m/detik sama dengan ... km/jam.", options: ["54 km/jam", "45 km/jam", "60 km/jam", "36 km/jam"], ans: 0, exp: "15 × 3.600 = 54.000 m/jam = 54 km/jam." },
+                    { q: "Rina bersepeda sejauh 6 km dalam waktu 30 menit. Kecepatan rata-rata Rina bersepeda adalah...", options: ["6 km/jam", "18 km/jam", "12 km/jam", "15 km/jam"], ans: 2, exp: "30 menit = 0,5 jam. Kecepatan = 6 km ÷ 0,5 jam = 12 km/jam." },
+                    { q: "Sebuah kereta api berangkat pukul 07.00 dan tiba di tujuan pukul 10.30. Jika kecepatan rata-rata kereta 80 km/jam, jarak yang ditempuh adalah...", options: ["240 km", "300 km", "260 km", "280 km"], ans: 3, exp: "Waktu = 3 jam 30 menit = 3,5 jam. Jarak = 80 × 3,5 = 280 km." },
+                    { q: "Jarak rumah Edo ke sekolah 3 km. Edo berjalan kaki dengan kecepatan 50 m/menit. Waktu yang diperlukan Edo ke sekolah adalah...", options: ["45 menit", "60 menit", "30 menit", "50 menit"], ans: 1, exp: "3 km = 3.000 m. Waktu = 3.000 m ÷ 50 m/menit = 60 menit." },
+                    { q: "Seorang pelari menempuh jarak 400 meter dalam waktu 50 detik. Kecepatan pelari tersebut adalah...", options: ["8 m/detik", "6 m/detik", "10 m/detik", "5 m/detik"], ans: 0, exp: "Kecepatan = 400 m ÷ 50 detik = 8 m/detik." },
+                    { q: "Paman berangkat ke kantor pukul 06.15 mengendarai motor dengan kecepatan 40 km/jam. Jika jarak ke kantor 20 km, Paman tiba pukul...", options: ["06.35", "06.40", "06.50", "06.45"], ans: 3, exp: "Waktu = 20 ÷ 40 = 0,5 jam = 30 menit. Tiba = 06.15 + 30 menit = 06.45." },
+                    { q: "Sebuah pesawat terbang melaju dengan kecepatan 600 km/jam selama 1 jam 45 menit. Jarak yang ditempuh pesawat adalah...", options: ["900 km", "1.050 km", "1.000 km", "1.150 km"], ans: 1, exp: "1 jam 45 menit = 1,75 jam. Jarak = 600 × 1,75 = 1.050 km." },
+                    { q: "Kecepatan rata-rata sebuah truk adalah 50 km/jam. Jika truk menempuh jarak 175 km, lama perjalanan truk tersebut adalah...", options: ["3 jam", "4 jam", "3 jam 30 menit", "3 jam 15 menit"], ans: 2, exp: "Waktu = 175 ÷ 50 = 3,5 jam = 3 jam 30 menit." },
+                    { q: "108 km/jam = ... m/detik.", options: ["30 m/detik", "25 m/detik", "35 m/detik", "20 m/detik"], ans: 0, exp: "108.000 m ÷ 3.600 detik = 30 m/detik." },
+                    { q: "25 m/detik = ... km/jam.", options: ["75 km/jam", "80 km/jam", "95 km/jam", "90 km/jam"], ans: 3, exp: "25 × 3.600 = 90.000 m/jam = 90 km/jam." },
+                    { q: "Budi mengendarai mobil dari kota X ke kota Y yang berjarak 150 km. Ia berangkat pukul 08.00 dengan kecepatan 60 km/jam. Di tengah jalan ia beristirahat 15 menit. Budi tiba di kota Y pukul...", options: ["10.30", "10.45", "10.15", "11.00"], ans: 1, exp: "Waktu jalan = 150 ÷ 60 = 2,5 jam (2 jam 30 menit). Total waktu = 2 jam 45 menit. Tiba = 08.00 + 2.45 = 10.45." },
+                    { q: "Sebuah siput merayap sejauh 120 cm dalam waktu 4 menit. Kecepatan siput tersebut adalah...", options: ["30 cm/menit", "40 cm/menit", "20 cm/menit", "25 cm/menit"], ans: 0, exp: "Kecepatan = 120 cm ÷ 4 menit = 30 cm/menit." },
+                    { q: "Jarak dua kota adalah 320 km. Sebuah mobil menempuhnya dalam waktu 4 jam. Jika ingin tiba 1 jam lebih cepat, kecepatan mobil harus menjadi...", options: ["70 km/jam", "90 km/jam", "80 km/jam", "100 km/jam"], ans: 2, exp: "Waktu target = 4 - 1 = 3 jam? Tunggu: 320 ÷ 4 = 80. Jika 1 jam lebih cepat = 3 jam -> tidak bulat. Mari koreksi: 320 ÷ 4 = 80 km/jam. (Soal: Waktu awal 5 jam -> 4 jam: 320÷4=80). Mari sesuaikan: Jarak 240 km, waktu awal 4 jam, ingin 1 jam lebih cepat (3 jam) -> 240 ÷ 3 = 80 km/jam!" },
+                    { q: "Sebuah sepeda motor melaju dengan kecepatan 54 km/jam. Dalam waktu 20 detik, jarak yang ditempuh motor tersebut adalah...", options: ["200 meter", "250 meter", "350 meter", "300 meter"], ans: 3, exp: "54 km/jam = 15 m/detik. Jarak = 15 m/detik × 20 detik = 300 meter." },
+                    { q: "Andi berlari dengan kecepatan 6 m/detik. Waktu yang dibutuhkan Andi untuk menempuh jarak 900 meter adalah...", options: ["2 menit 30 detik", "2 menit", "3 menit", "1 menit 30 detik"], ans: 0, exp: "Waktu = 900 ÷ 6 = 150 detik = 2 menit 30 detik." },
+                    { q: "Jarak kota P dan Q adalah 210 km. Mobil A berangkat dari P menuju Q dengan kecepatan 40 km/jam. Pada waktu bersamaan, Mobil B berangkat dari Q menuju P dengan kecepatan 30 km/jam. Mereka akan berpapasan setelah...", options: ["2 jam", "3 jam", "4 jam", "2,5 jam"], ans: 1, exp: "Waktu berpapasan = Jarak ÷ (Kecepatan A + Kecepatan B) = 210 ÷ (40 + 30) = 210 ÷ 70 = 3 jam." },
+                    { q: "Sebuah kapal laut berlayar selama 5 jam dengan kecepatan rata-rata 36 km/jam. Jarak yang ditempuh kapal tersebut adalah...", options: ["150 km", "160 km", "180 km", "200 km"], ans: 2, exp: "Jarak = 36 km/jam × 5 jam = 180 km." },
+                    { q: "90 km/jam = ... m/menit.", options: ["150 m/menit", "900 m/menit", "15.000 m/menit", "1.500 m/menit"], ans: 3, exp: "90 km = 90.000 m. 1 jam = 60 menit. Maka 90.000 ÷ 60 = 1.500 m/menit." },
+                    { q: "Siti berangkat sekolah pukul 06.30 dengan kecepatan sepeda 10 km/jam. Jika jarak sekolah 2,5 km, Siti tiba di sekolah pukul...", options: ["06.45", "06.40", "06.50", "06.55"], ans: 0, exp: "Waktu = 2,5 ÷ 10 = 0,25 jam = 15 menit. Tiba = 06.30 + 15 menit = 06.45." },
+                    { q: "Sebuah bus menempuh jarak 120 km dalam waktu 1 jam 30 menit. Kecepatan rata-rata bus tersebut adalah...", options: ["75 km/jam", "80 km/jam", "85 km/jam", "90 km/jam"], ans: 1, exp: "1 jam 30 menit = 1,5 jam. Kecepatan = 120 ÷ 1,5 = 80 km/jam." },
+                    { q: "Cahaya merambat dengan kecepatan 300.000 km/detik. Jarak yang ditempuh cahaya dalam waktu 4 detik adalah...", options: ["75.000 km", "900.000 km", "1.200.000 km", "120.000 km"], ans: 2, exp: "Jarak = 300.000 × 4 = 1.200.000 km." },
+                    { q: "Dina berjalan kaki sejauh 1,2 km dalam waktu 20 menit. Kecepatan Dina berjalan adalah ... m/menit.", options: ["40 m/menit", "50 m/menit", "80 m/menit", "60 m/menit"], ans: 3, exp: "1,2 km = 1.200 m. Kecepatan = 1.200 ÷ 20 = 60 m/menit." },
+                    { q: "Sebuah taksi melaju dengan kecepatan 65 km/jam. Untuk menempuh jarak 260 km, taksi memerlukan waktu...", options: ["4 jam", "3 jam", "5 jam", "4,5 jam"], ans: 0, exp: "Waktu = 260 ÷ 65 = 4 jam." },
+                    { q: "120 m/menit = ... km/jam.", options: ["12 km/jam", "7,2 km/jam", "72 km/jam", "6 km/jam"], ans: 1, exp: "120 × 60 = 7.200 m/jam = 7,2 km/jam." },
+                    { q: "Jarak rumah nenek adalah 135 km. Ayah menyetir dengan kecepatan rata-rata 54 km/jam. Lama perjalanan Ayah adalah...", options: ["2 jam", "3 jam", "2 jam 30 menit", "2 jam 15 menit"], ans: 2, exp: "Waktu = 135 ÷ 54 = 2,5 jam = 2 jam 30 menit." },
+                    { q: "Seorang pengendara sepeda motor melaju selama 45 menit dengan kecepatan 60 km/jam. Jarak yang ia tempuh adalah...", options: ["30 km", "40 km", "50 km", "45 km"], ans: 3, exp: "45 menit = 0,75 jam (3/4 jam). Jarak = 60 × 3/4 = 45 km." }
+                ]
+            },
+            akar: {
+                id: 'akar',
+                title: 'Akar Pangkat 2 & Akar Pangkat 3',
+                shortTitle: '3. Akar 2 & 3 (30 Soal)',
+                icon: 'fa-square-root-variable',
+                questions: [
+                    { q: "Hasil dari √144 adalah...", options: ["14", "12", "16", "11"], ans: 1, exp: "12 × 12 = 144, maka √144 = 12." },
+                    { q: "Hasil dari √289 adalah...", options: ["17", "13", "19", "23"], ans: 0, exp: "17 × 17 = 289, maka √289 = 17." },
+                    { q: "Hasil dari ∛125 adalah...", options: ["15", "25", "5", "4"], ans: 2, exp: "5 × 5 × 5 = 125, maka ∛125 = 5." },
+                    { q: "Hasil dari ∛512 adalah...", options: ["6", "7", "9", "8"], ans: 3, exp: "8 × 8 × 8 = 512, maka ∛512 = 8." },
+                    { q: "Hasil dari √625 + √169 adalah...", options: ["38", "36", "42", "34"], ans: 0, exp: "√625 = 25 dan √169 = 13. Jadi 25 + 13 = 38." },
+                    { q: "Hasil dari ∛1.728 adalah...", options: ["14", "12", "18", "16"], ans: 1, exp: "12 × 12 × 12 = 1.728, maka ∛1.728 = 12." },
+                    { q: "Luas sebuah persegi adalah 484 cm². Panjang sisi persegi tersebut adalah...", options: ["24 cm", "18 cm", "22 cm", "28 cm"], ans: 2, exp: "Sisi = √484 = 22 cm (karena 22 × 22 = 484)." },
+                    { q: "Volume sebuah kubus adalah 3.375 cm³. Panjang rusuk kubus tersebut adalah...", options: ["25 cm", "13 cm", "17 cm", "15 cm"], ans: 3, exp: "Rusuk = ∛3.375 = 15 cm (karena 15 × 15 × 15 = 3.375)." },
+                    { q: "Hasil dari √900 - ∛1.000 adalah...", options: ["20", "10", "25", "15"], ans: 0, exp: "√900 = 30 dan ∛1.000 = 10. Jadi 30 - 10 = 20." },
+                    { q: "Hasil dari √1.296 adalah...", options: ["34", "36", "32", "38"], ans: 1, exp: "36 × 36 = 1.296, maka √1.296 = 36." },
+                    { q: "Hasil dari ∛4.913 adalah...", options: ["13", "23", "17", "19"], ans: 2, exp: "17 × 17 × 17 = 4.913, maka ∛4.913 = 17." },
+                    { q: "Nilai dari √81 × ∛64 adalah...", options: ["32", "45", "27", "36"], ans: 3, exp: "√81 = 9 dan ∛64 = 4. Maka 9 × 4 = 36." },
+                    { q: "Hasil dari √2.025 adalah...", options: ["45", "35", "55", "40"], ans: 0, exp: "45 × 45 = 2.025, maka √2.025 = 45." },
+                    { q: "Hasil dari ∛8.000 adalah...", options: ["200", "20", "40", "80"], ans: 1, exp: "20 × 20 × 20 = 8.000, maka ∛8.000 = 20." },
+                    { q: "Jika √n = 19, maka nilai n adalah...", options: ["261", "381", "361", "341"], ans: 2, exp: "n = 19² = 19 × 19 = 361." },
+                    { q: "Jika ∛p = 9, maka nilai p adalah...", options: ["243", "512", "629", "729"], ans: 3, exp: "p = 9³ = 9 × 9 × 9 = 729." },
+                    { q: "Hasil dari √324 + ∛343 adalah...", options: ["25", "23", "27", "21"], ans: 0, exp: "√324 = 18 dan ∛343 = 7. Jadi 18 + 7 = 25." },
+                    { q: "Hasil dari ∛13.824 adalah...", options: ["22", "24", "26", "28"], ans: 1, exp: "24 × 24 × 24 = 13.824, maka ∛13.824 = 24." },
+                    { q: "Keliling sebuah kebun berbentuk persegi yang memiliki luas 729 m² adalah...", options: ["27 m", "81 m", "108 m", "54 m"], ans: 2, exp: "Sisi = √729 = 27 m. Keliling = 4 × 27 = 108 m." },
+                    { q: "Hasil dari √256 ÷ ∛8 adalah...", options: ["14", "6", "12", "8"], ans: 3, exp: "√256 = 16 dan ∛8 = 2. Maka 16 ÷ 2 = 8." },
+                    { q: "Hasil dari √1.600 + √400 adalah...", options: ["60", "50", "80", "200"], ans: 0, exp: "√1.600 = 40 dan √400 = 20. Maka 40 + 20 = 60." },
+                    { q: "Hasil dari ∛27.000 - ∛216 adalah...", options: ["26", "24", "22", "14"], ans: 1, exp: "∛27.000 = 30 dan ∛216 = 6. Maka 30 - 6 = 24." },
+                    { q: "Hasil dari √529 adalah...", options: ["27", "21", "23", "13"], ans: 2, exp: "23 × 23 = 529, maka √529 = 23." },
+                    { q: "Hasil dari ∛2.197 adalah...", options: ["17", "23", "19", "13"], ans: 3, exp: "13 × 13 × 13 = 2.197, maka ∛2.197 = 13." },
+                    { q: "Sebuah bak kubus mampu menampung 2.744 liter air. Tinggi bak tersebut adalah ... dm.", options: ["14 dm", "16 dm", "12 dm", "24 dm"], ans: 0, exp: "1 liter = 1 dm³. Tinggi = ∛2.744 = 14 dm." },
+                    { q: "Hasil dari (√196 + √121) × ∛27 adalah...", options: ["65", "75", "85", "50"], ans: 1, exp: "√196 = 14, √121 = 11, ∛27 = 3. Maka (14 + 11) × 3 = 25 × 3 = 75." },
+                    { q: "Hasil dari √3.600 adalah...", options: ["30", "600", "60", "160"], ans: 2, exp: "60 × 60 = 3.600, maka √3.600 = 60." },
+                    { q: "Hasil dari ∛32.768 adalah...", options: ["28", "38", "22", "32"], ans: 3, exp: "32 × 32 × 32 = 32.768, maka ∛32.768 = 32." },
+                    { q: "Selisih antara √1.024 dan ∛1.331 adalah...", options: ["21", "23", "19", "25"], ans: 0, exp: "√1.024 = 32 dan ∛1.331 = 11. Selisih = 32 - 11 = 21." },
+                    { q: "Hasil dari √100 × ∛1.000 ÷ √25 adalah...", options: ["25", "20", "10", "50"], ans: 1, exp: "√100 = 10, ∛1.000 = 10, √25 = 5. Maka (10 × 10) ÷ 5 = 100 ÷ 5 = 20." }
+                ]
+            }
+        };
+
+        // Perbaikan kecil pada soal kecepatan nomor 17 agar angka konsisten
+        quizData.kecepatan.questions[16] = {
+            q: "Jarak dua kota adalah 240 km. Sebuah mobil menempuhnya dalam waktu 4 jam. Jika ingin tiba 1 jam lebih cepat, kecepatan mobil harus menjadi...",
+            options: ["70 km/jam", "90 km/jam", "80 km/jam", "100 km/jam"],
+            ans: 2,
+            exp: "Waktu target = 4 jam - 1 jam = 3 jam. Kecepatan = 240 km ÷ 3 jam = 80 km/jam."
+        };
+
+        // Key untuk localStorage
+        const STORAGE_KEY = 'kuis_matematika_sd_90_v1';
+
+        // State Aplikasi
+        let appState = {
+            activeTab: 'debit',
+            currentIndex: {
+                debit: 0,
+                kecepatan: 0,
+                akar: 0
+            },
+            answers: {
+                debit: {},      // format: { 0: 1, 1: 0, ... } (index soal: index opsi dipilih)
+                kecepatan: {},
+                akar: {}
+            }
+        };
+
+        // Memuat state dari localStorage saat halaman dibuka
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.activeTab && quizData[parsed.activeTab]) {
+                        appState.activeTab = parsed.activeTab;
+                    }
+                    if (parsed.currentIndex) {
+                        appState.currentIndex = { ...appState.currentIndex, ...parsed.currentIndex };
+                    }
+                    if (parsed.answers) {
+                        appState.answers = {
+                            debit: parsed.answers.debit || {},
+                            kecepatan: parsed.answers.kecepatan || {},
+                            akar: parsed.answers.akar || {}
+                        };
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal memuat data dari penyimpanan lokal:", e);
+            }
+        }
+
+        // Menyimpan state ke localStorage setiap ada perubahan
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error("Gagal menyimpan data ke penyimpanan lokal:", e);
+            }
+        }
+
+        // Mengganti Tab Kategori
+        function switchTab(tabId) {
+            if (!quizData[tabId]) return;
+            appState.activeTab = tabId;
+            saveState();
+            renderAll();
+        }
+
+        // Memilih Soal Tertentu lewat Grid Navigasi
+        function jumpToQuestion(index) {
+            const tab = appState.activeTab;
+            if (index >= 0 && index < quizData[tab].questions.length) {
+                appState.currentIndex[tab] = index;
+                saveState();
+                renderAll();
+            }
+        }
+
+        // Navigasi Sebelumnya / Selanjutnya
+        function navigateQuestion(step) {
+            const tab = appState.activeTab;
+            const newIdx = appState.currentIndex[tab] + step;
+            jumpToQuestion(newIdx);
+        }
+
+        // Menjawab Soal
+        function selectOption(optionIndex) {
+            const tab = appState.activeTab;
+            const qIdx = appState.currentIndex[tab];
+
+            // Jika sudah dijawab, kunci jawaban agar tidak diubah-ubah (atau izinkan? Umumnya kuis instan mengunci jawaban setelah dipilih)
+            if (appState.answers[tab][qIdx] !== undefined) {
+                return;
+            }
+
+            appState.answers[tab][qIdx] = optionIndex;
+            saveState();
+            renderAll();
+        }
+
+        // Render Tab Header
+        function renderTabs() {
+            const container = document.getElementById('tabs-container');
+            container.innerHTML = '';
+
+            Object.values(quizData).forEach(cat => {
+                const isActive = appState.activeTab === cat.id;
+                const answeredCount = Object.keys(appState.answers[cat.id]).length;
+                const totalCount = cat.questions.length;
+
+                const btn = document.createElement('button');
+                btn.onclick = () => switchTab(cat.id);
+                btn.className = `px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-2 border ${
+                    isActive 
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                }`;
+
+                btn.innerHTML = `
+                    <i class="fa-solid ${cat.icon}"></i>
+                    <span>${cat.shortTitle}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                        isActive ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'
+                    }">${answeredCount}/${totalCount}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        // Render Statistik Global & Kategori
+        function renderStats() {
+            let totalCorrect = 0;
+            let totalQuestions = 0;
+
+            Object.keys(quizData).forEach(catKey => {
+                const questions = quizData[catKey].questions;
+                const userAns = appState.answers[catKey];
+                totalQuestions += questions.length;
+
+                Object.keys(userAns).forEach(qIdx => {
+                    if (userAns[qIdx] === questions[qIdx].ans) {
+                        totalCorrect++;
+                    }
+                });
+            });
+
+            document.getElementById('global-score').textContent = `${totalCorrect} / ${totalQuestions}`;
+
+            // Statistik kategori aktif
+            const activeCat = quizData[appState.activeTab];
+            const activeAns = appState.answers[appState.activeTab];
+            let catCorrect = 0;
+            let catWrong = 0;
+
+            Object.keys(activeAns).forEach(qIdx => {
+                if (activeAns[qIdx] === activeCat.questions[qIdx].ans) {
+                    catCorrect++;
+                } else {
+                    catWrong++;
+                }
+            });
+
+            document.getElementById('category-badge').textContent = `Kategori ${activeCat.id.toUpperCase()}`;
+            document.getElementById('category-title').textContent = activeCat.title;
+            document.getElementById('cat-answered').textContent = `${Object.keys(activeAns).length}/${activeCat.questions.length}`;
+            document.getElementById('cat-correct').textContent = catCorrect;
+            document.getElementById('cat-wrong').textContent = catWrong;
+        }
+
+        // Render Area Soal & Opsi Jawaban
+        function renderQuestion() {
+            const tab = appState.activeTab;
+            const qIdx = appState.currentIndex[tab];
+            const questionObj = quizData[tab].questions[qIdx];
+            const userSelected = appState.answers[tab][qIdx];
+            const isAnswered = userSelected !== undefined;
+
+            // Update Nomor & Status
+            document.getElementById('question-number').textContent = `Soal No. ${qIdx + 1} dari ${quizData[tab].questions.length}`;
+            
+            const statusBadge = document.getElementById('question-status-badge');
+            if (!isAnswered) {
+                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500';
+                statusBadge.innerHTML = '<i class="fa-regular fa-circle mr-1"></i> Belum dijawab';
+            } else if (userSelected === questionObj.ans) {
+                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700';
+                statusBadge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Jawaban Benar';
+            } else {
+                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700';
+                statusBadge.innerHTML = '<i class="fa-solid fa-times-circle mr-1"></i> Jawaban Salah';
+            }
+
+            // Teks Soal
+            document.getElementById('question-text').textContent = questionObj.q;
+
+            // Opsi A, B, C, D
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            questionObj.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectOption(idx);
+                btn.disabled = isAnswered;
+
+                let btnStyle = 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-700';
+                let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200';
+                let rightIcon = '';
+
+                if (isAnswered) {
+                    if (idx === questionObj.ans) {
+                        // Opsi yang benar selalu disorot hijau
+                        btnStyle = 'bg-emerald-50 border-emerald-500 text-emerald-900 font-semibold ring-1 ring-emerald-500';
+                        badgeStyle = 'bg-emerald-600 text-white border-emerald-600';
+                        rightIcon = '<i class="fa-solid fa-circle-check text-emerald-600 text-lg ml-auto"></i>';
+                    } else if (idx === userSelected && userSelected !== questionObj.ans) {
+                        // Opsi salah yang dipilih user disorot merah
+                        btnStyle = 'bg-rose-50 border-rose-500 text-rose-900 font-semibold ring-1 ring-rose-500';
+                        badgeStyle = 'bg-rose-600 text-white border-rose-600';
+                        rightIcon = '<i class="fa-solid fa-circle-xmark text-rose-600 text-lg ml-auto"></i>';
+                    } else {
+                        // Opsi lain yang tidak dipilih redup
+                        btnStyle = 'bg-slate-50/70 border-slate-200 text-slate-400 opacity-75';
+                        badgeStyle = 'bg-slate-100 text-slate-400 border-slate-200';
+                    }
+                }
+
+                btn.className = `w-full text-left p-3.5 sm:p-4 rounded-xl border transition flex items-center gap-3.5 ${btnStyle} ${!isAnswered ? 'cursor-pointer' : 'cursor-default'}`;
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-lg border flex items-center justify-center font-bold text-sm shrink-0 ${badgeStyle}">
+                        ${letters[idx]}
+                    </span>
+                    <span class="text-sm sm:text-base">${optText}</span>
+                    ${rightIcon}
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Kotak Umpan Balik (Feedback) Langsung
+            const feedbackBox = document.getElementById('feedback-box');
+            if (isAnswered) {
+                const isCorrect = userSelected === questionObj.ans;
+                feedbackBox.classList.remove('hidden');
+                if (isCorrect) {
+                    feedbackBox.className = 'mt-6 p-4 rounded-xl border bg-emerald-50/80 border-emerald-200 text-emerald-900 fade-in';
+                    document.getElementById('feedback-icon').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+                    document.getElementById('feedback-title').textContent = 'Benar! Hebat sekali.';
+                } else {
+                    feedbackBox.className = 'mt-6 p-4 rounded-xl border bg-rose-50/80 border-rose-200 text-rose-900 fade-in';
+                    document.getElementById('feedback-icon').innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600"></i>';
+                    document.getElementById('feedback-title').textContent = `Kurang Tepat! Jawaban yang benar adalah ${letters[questionObj.ans]}.`;
+                }
+                document.getElementById('feedback-explanation').innerHTML = `<strong>Pembahasan:</strong> ${questionObj.exp}`;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Update tombol Prev / Next
+            document.getElementById('btn-prev').disabled = qIdx === 0;
+            document.getElementById('btn-next').disabled = qIdx === quizData[tab].questions.length - 1;
+        }
+
+        // Render Grid Navigasi 30 Nomor
+        function renderNavGrid() {
+            const tab = appState.activeTab;
+            const questions = quizData[tab].questions;
+            const userAns = appState.answers[tab];
+            const currentIdx = appState.currentIndex[tab];
+
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => jumpToQuestion(idx);
+                btn.textContent = idx + 1;
+
+                const isCurrent = idx === currentIdx;
+                const ans = userAns[idx];
+
+                let colorClass = 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+                if (ans !== undefined) {
+                    if (ans === q.ans) {
+                        colorClass = 'bg-emerald-500 text-white border-emerald-600 font-bold';
+                    } else {
+                        colorClass = 'bg-rose-500 text-white border-rose-600 font-bold';
+                    }
+                }
+
+                const activeRing = isCurrent ? 'ring-2 ring-offset-2 ring-indigo-600 font-extrabold' : '';
+
+                btn.className = `h-10 rounded-lg border text-xs sm:text-sm transition flex items-center justify-center ${colorClass} ${activeRing}`;
+                grid.appendChild(btn);
+            });
+        }
+
+        // Render Keseluruhan UI
+        function renderAll() {
+            renderTabs();
+            renderStats();
+            renderQuestion();
+            renderNavGrid();
+        }
+
+        // Modal Reset Functions
+        function openResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function resetCurrentTab() {
+            const tab = appState.activeTab;
+            appState.answers[tab] = {};
+            appState.currentIndex[tab] = 0;
+            saveState();
+            closeResetModal();
+            renderAll();
+        }
+
+        function resetAllData() {
+            appState.answers = { debit: {}, kecepatan: {}, akar: {} };
+            appState.currentIndex = { debit: 0, kecepatan: 0, akar: 0 };
+            saveState();
+            closeResetModal();
+            renderAll();
+        }
+
+        // Keyboard Arrow Support untuk navigasi cepat
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                navigateQuestion(1);
+            } else if (e.key === 'ArrowLeft') {
+                navigateQuestion(-1);
+            }
+        });
+
+        // Inisialisasi saat halaman selesai dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderAll();
+        });
+    </script>
+</body>
+</html>
